@@ -1,0 +1,11 @@
+spot,lat,lon,km_to_town,nation,council_area,nearest_town,km_to_coast
+1,58.624,-4.956,81.5,Scotland,Highland,Ullapool,4.4
+2,58.444,-4.566,62.6,Scotland,Highland,Thurso,10.0
+3,58.374,-5.151,52.9,Scotland,Highland,Ullapool,3.8
+4,57.289,-5.351,52.4,Scotland,Highland,Portree,14.1
+5,56.894,-5.916,49.7,Scotland,Highland,Fort William,3.5
+6,58.174,-4.621,44.0,Scotland,Highland,Golspie,24.7
+7,57.549,-5.501,43.8,Scotland,Highland,Ullapool,4.8
+8,56.474,-4.776,42.9,Scotland,Argyll and Bute,Callander,30.0
+9,57.769,-5.801,40.6,Scotland,Highland,Ullapool,5.9
+10,56.759,-4.466,39.6,Scotland,Perth and Kinross,Caol,44.0

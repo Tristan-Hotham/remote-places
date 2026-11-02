@@ -1,0 +1,139 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\newfontfamily\headfont{Inter}[UprightFont=*-ExtraBold,BoldFont=*-ExtraBold,Extension=.otf,Path=/usr/share/fonts/opentype/inter/]
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{graphicx,booktabs,float,caption,array,xcolor,longtable}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage[round]{natbib}
+\usepackage{setspace}
+\setstretch{1.05}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\titleformat{\section}{\headfont\Large}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\headfont\large}{\thesubsection}{0.8em}{}
+\captionsetup{font=small,labelfont=bf}
+\urlstyle{same}
+\hypersetup{pdftitle={The Middle of Nowhere},pdfauthor={Tristan Hotham}}
+
+\begin{document}
+\begin{center}
+{\Large\bfseries The Middle of Nowhere\par}
+\vspace{0.4em}
+{\large The most remote places on Earth, measured from every town:\\distances from all land to {{source.towns|int}} populated places, cities and the coast\par}
+\vspace{1.2em}
+{\large Tristan Hotham\par}
+\vspace{0.3em}
+{\small Independent researcher\\
+ORCID: 0000-0003-4931-9349\\
+DOI: \href{https://doi.org/{{meta.doi}}}{https://doi.org/{{meta.doi}}}\par}
+\vspace{0.8em}
+2026
+\end{center}
+
+\begin{quote}
+\small
+\begin{center}\textbf{Abstract}\end{center}
+Poles of inaccessibility are usually defined as the points farthest from the sea. I compute a different kind of remoteness: the great-circle distance from every point on land to the nearest populated place of 1,000 or more people in the GeoNames gazetteer ({{source.towns|int}} places), to the nearest city of 100,000 or more and of 1,000,000 or more in Natural Earth, and to the nearest coast, on an area-weighted 0.1 degree grid of {{source.land_cells|int}} land cells, with maxima refined to 0.01 degrees. Outside Antarctica, {{share.town.100|pc1}} of the land ({{share.town.100_m|f1}} million km\textsuperscript{2}) is more than 100 km from a town and {{share.town.500|pc1}} more than 500 km; half lies within {{share.town.median|int}} km. Land north of 60\textdegree N holds {{north.far100_share_north60|int}}\% of the land beyond 100 km and {{north.far500_share_north60|int}}\% of that beyond 500 km. The most remote point on each mainland is Cape Chelyuskin in Asia ({{continents.Asia.town.d|int}} km), the Great Victoria Desert in Australia ({{continents.Australia and Oceania.town.d|int}} km), the Libyan Desert of Sudan in Africa ({{continents.Africa.town.d|int}} km), northern Saskatchewan in North America ({{continents.North America.town.d|int}} km), northern Par\'a in South America ({{continents.South America.town.d|int}} km) and north-eastern European Russia ({{continents.Europe.town.d|int}} km). Counting islands, Marion Island is the most remote land outside Antarctica ({{scraps.0.d|int}} km), and every point in Antarctica, which has no towns in the gazetteer, is at least {{antarctica.min_town|int}} km from one. The classic far-from-the-sea pole in Dzungaria lies only {{eurasia.ours_town|int}} km from a town. In the United Kingdom the most remote spot is near Cape Wrath ({{uk.Scotland.d|int}} km); England's is in Kielder Forest ({{uk.England.d|int}} km) and its nearest town is in Scotland. I report the most remote point of every country and territory and discuss the limits of straight-line distance to a gazetteer.
+
+\textbf{Keywords:} remoteness; pole of inaccessibility; settlement; accessibility; GeoNames; Natural Earth; great-circle distance; wilderness; open data; mapping
+\end{quote}
+
+\section{Introduction}
+The idea of a pole of inaccessibility, the point on a continent or ocean farthest from the coast, has a long history in exploration and cartography, and its best known example, the Eurasian pole in the Dzungarian basin of north-west China, has been computed many times. Distance from the sea, however, says little about isolation from people. A point can be thousands of kilometres from any ocean and an hour's drive from a market town.
+
+This paper computes remoteness from settlement instead. For every point on land I measure the great-circle distance to the nearest populated place of 1,000 or more people, to the nearest city of 100,000 or more and of a million or more, and, for comparison, to the nearest coast. I then report how much of the world's land is far from a town, where the most remote point of each continent, large island and country lies, and what the same measure finds in a densely settled country, the United Kingdom. The results accompany an interactive map (\url{{{meta.page}}}).
+
+\section{Data}
+\textbf{Towns.} The GeoNames cities1000 file \citep{geonames} lists every populated place with 1,000 or more people, together with some smaller places that are seats of administrative divisions; I use the copy packaged by \citet{citiesjson} (commit {{source.commit|raw}}), with {{source.towns|int}} places in {{source.town_countries|int}} countries and territories. It has names, coordinates and country codes but no populations. None of its places lies south of 60\textdegree S.
+
+\textbf{Cities.} Natural Earth's populated places \citep{naturalearth} give estimated populations (pop\_max) for {{source.ne_places|int}} places, of which {{source.c100k|int}} have 100,000 or more people and {{source.c1m|int}} a million or more.
+
+\textbf{Land, coast and countries.} The Natural Earth 1:50m land polygons define land and coast; lakes count as land and the Caspian Sea as sea, and the Antarctic outline follows the land rather than the floating ice shelves. Countries and territories are the Natural Earth 1:10m admin 0 polygons; the 1:10m first-level divisions split the United Kingdom into its four nations and name council areas.
+
+\section{Method}
+\textbf{Grid.} A 0.1 degree latitude and longitude grid (3,600 by 1,800 cells) is laid over the land. A cell is land if its centre falls inside the land polygons; cells along the coast are tested exactly ({{source.edge_cells_exact|int}} cells) and the rest are rasterised, which agrees with an exact test on {{source.land_agree_pct|f2}}\% of a random sample. This gives {{source.land_cells|int}} land cells. Each cell is weighted by its true area on the sphere, $R^2\,\Delta\lambda\,(\sin\phi_2-\sin\phi_1)$, so that the narrow cells near the poles are not over-counted; total land is {{land.km2|int}} km\textsuperscript{2}, of which Antarctica is {{land.ant_km2|int}} km\textsuperscript{2}.
+
+\textbf{Distances.} Every town, city and coast point (the land outline densified to 0.02 degrees, {{source.coast_points|int}} points) is converted to a unit vector, and the nearest one to each cell centre is found with a k-d tree. The chord length $c$ to the nearest point gives the great-circle distance exactly as $2R\arcsin(c/2)$, with $R = {{source.radius_km|f1}}$ km.
+
+\textbf{Maxima.} For each region (the world, a continent's mainland, an island, a country) the best few grid cells are refined on a 0.01 degree grid within 0.1 degrees of each, keeping only points inside the region's polygon. Positions are therefore good to about a kilometre. A country's most remote point is the point inside its outline farthest from any town, in that country or not; I also report the same for each country's largest polygon, its main land mass.
+
+\textbf{Continents.} Continents follow Natural Earth's country assignment, with Russia split along a rough line for the Urals and the Kara Sea. A mainland is the Natural Earth land polygon of the continent; at 1:50m a few islands separated by very narrow straits are joined to it. Antarctica is reported separately throughout: with no towns in the gazetteer, every Antarctic distance is to a town on another continent, so including it would swamp the world shares.
+
+\section{Results}
+\subsection{How much land is far from a town}
+Half of the land outside Antarctica lies within {{share.town.median|int}} km of a town, and {{share.town.within25|int}}\% within 25 km (Figure~\ref{fig:share}). {{share.town.100|pc1}} is more than 100 km away, {{share.town.250|pc1}} more than 250 km and {{share.town.500|pc1}} more than 500 km. The medians for cities of 100,000 and of a million are {{share.c100k.median|int}} km and {{share.c1m.median|int}} km, and {{share.c1m.500|pc1}} of the land is more than 500 km from a city of a million. Half of the land is within {{share.coast.median|int}} km of the coast.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_map_town.png}
+\caption{Distance from every point on land to the nearest place of 1,000 or more people, with the most remote point of each continent's mainland and of all land outside Antarctica (Marion Island). Equal Earth projection.}\label{fig:map}\end{figure}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_share.png}
+\caption{Cumulative share of the land outside Antarctica within a given distance of a town, a city of 100,000+, a city of a million and the coast. Dots mark the medians.}\label{fig:share}\end{figure}
+
+Remoteness is concentrated at high northern latitudes and in the subtropical deserts (Figure~\ref{fig:lat}). Land north of 60\textdegree N is {{north.north60_land_pct|f1}}\% of the land outside Antarctica but holds {{north.far100_share_north60|f1}}\% of the land more than 100 km from a town and {{north.far500_share_north60|f1}}\% of that more than 500 km away.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_lat.png}
+\caption{Share of land in each 5\textdegree{} band of latitude more than 100 km and more than 500 km from a town.}\label{fig:lat}\end{figure}
+
+\subsection{Continents and islands}
+Table~\ref{tab:cont} and Figure~\ref{fig:cont} give the most remote point of each mainland for the four measures. From a town, Asia's lies at Cape Chelyuskin on the Taymyr Peninsula, Australia's in the Great Victoria Desert of Western Australia, Africa's in the Libyan Desert of north-western Sudan, North America's in the far north of Saskatchewan, South America's in the forest of northern Par\'a near Suriname, and Europe's on the Kara Sea coast of north-eastern European Russia. The far-from-the-sea maxima fall close to the published continental poles of inaccessibility: in the Central African Republic near Obo, in South Dakota, in Mato Grosso and west of Alice Springs. The Eurasian maximum, at {{eurasia.ours.lat|lat}} {{eurasia.ours.lon|lon}} and {{eurasia.ours.d|int}} km from the coast, lies {{eurasia.sep_km|int}} km from the commonly cited position of about 46\textdegree 17$'$N 86\textdegree 40$'$E, where my coastline gives {{eurasia.ref_coast|int}} km; the difference reflects the generalised 1:50m coastline and the treatment of the Caspian and Arctic shores. Both points are less than 100 km from a town ({{eurasia.ours_town|int}} km and {{eurasia.ref_town|int}} km).
+
+{{TABLE_CONT}}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_continents.png}
+\caption{The most remote point of each continent's mainland, km, for each measure.}\label{fig:cont}\end{figure}
+
+Islands hold the global maxima. Outside Antarctica the land farthest from a town is Marion Island in the Prince Edward Islands ({{scraps.0.d|int}} km from {{scraps.0.town_name|raw}}), followed by the Crozet Islands ({{scraps.1.d|int}} km from {{scraps.1.town_name|raw}}, the base on Kerguelen, which GeoNames lists as an administrative seat). In the Arctic, Cape Columbia on Ellesmere Island is {{isl.Ellesmere Island.d|int}} km from a town and the north coast of Greenland {{isl.Greenland.d|int}} km; {{isl.Greenland.far100|int}}\% of Greenland is more than 100 km from one (Table~\ref{tab:isl}). For cities, the most remote land is Heard Island ({{global.c100k.world.d|int}} km from a city of 100,000) and the Marquesas Islands ({{global.c1m.world.d|int}} km from a city of a million).
+
+{{TABLE_ISL}}
+
+\subsection{Famous empty places}
+Table~\ref{tab:cand} checks regions often named as the world's emptiest. The Sahara's most remote point from a town is {{cand.Sahara.d|int}} km away and {{cand.Sahara.far100|int}}\% of the box drawn around it is more than 100 km from one; Tibet's Changtang reaches {{cand.Changtang.d|int}} km, the Empty Quarter {{cand.Rub al Khali.d|int}} km, the Australian interior {{cand.Australian interior.d|int}} km and mainland Siberia {{cand.Siberia.d|int}} km, while the Amazon reaches {{cand.Amazon.d|int}} km. The Arctic islands of Canada and Greenland exceed them all.
+
+{{TABLE_CAND}}
+
+\subsection{Antarctica}
+Antarctica's research stations are not in the gazetteer, so on this measure the continent has no towns at all. Every point of it is at least {{antarctica.min_town|int}} km from a town, its median distance is {{antarctica.median_town|int}} km, and its most remote point, on the polar plateau at {{antarctica.max.lat|lat}} {{antarctica.max.lon|lon}}, is {{antarctica.max.d|int}} km from {{antarctica.max.town_name|raw}}. Its farthest point from the Natural Earth coast is {{antarctica.coast_pole.d|int}} km inland at {{antarctica.coast_pole.lat|lat}} {{antarctica.coast_pole.lon|lon}}; because the outline excludes the floating ice shelves, this differs from calculations that use the ice front as the coast.
+
+\subsection{Countries}
+Counting islands, the countries with the most remote points are South Africa (Marion Island), Canada (Ellesmere Island), Greenland, the United States (the western Aleutian Islands, whose nearest town is {{countries.United States.town_name|raw}} in Russia) and Russia (Franz Josef Land). On each country's main land mass the order is Greenland, Russia, Australia, Sudan and Canada (Table~\ref{tab:cty}, Figure~\ref{fig:cty}). For {{n_abroad|int}} countries the nearest town to the most remote point is in another country. The median country's most remote point is {{countries_median_d|int}} km from a town, and {{countries_under10|int}} small countries have no point more than 10 km from one.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_countries.png}
+\caption{The farthest point from a town on the main land mass of each country over 100,000 km\textsuperscript{2}; purple: the nearest town is in another country.}\label{fig:cty}\end{figure}
+
+{{TABLE_CTY}}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_map_c1m.png}
+\caption{Distance from every point on land to the nearest city of 1,000,000 or more, with the farthest point of each continent's mainland.}\label{fig:c1m}\end{figure}
+
+\subsection{The United Kingdom}
+In a densely settled country the same measure works in tens of kilometres (Figure~\ref{fig:uk}). Half of the island of Great Britain is within {{gb.median|f1}} km of a town and {{gb.far10|f1}}\% is more than 10 km from one. The most remote spot on the island is near Cape Wrath at {{uk.Scotland.lat|lat}} {{uk.Scotland.lon|lon}}, {{uk.Scotland.d|int}} km from {{uk.Scotland.town_name|raw}}, and most of the ten most remote spots, at least 30 km apart, are in the Highland council area. {{uk.Scotland.far10|f1}}\% of mainland Scotland is more than 10 km from a town, against {{uk.England.far10|f1}}\% of England and {{uk.Wales.far10|f1}}\% of Wales. England's most remote point is in Kielder Forest, Northumberland ({{uk.England.d|int}} km, nearest town {{uk.England.town_name|raw}} in Scotland), or Lundy if islands count ({{uk.England.with_islands.d|int}} km); Wales's is the tip of the Ll\^yn Peninsula ({{uk.Wales.d|int}} km) and Northern Ireland's is in the Sperrin Mountains ({{uk.Northern Ireland.d|int}} km). On a small, busy island, the ends of peninsulas are often farther from a town than the uplands.
+
+\begin{figure}[tbp]\centering\includegraphics[width=0.9\textwidth]{f_uk.png}
+\caption{Distance to the nearest place of 1,000 or more people in the United Kingdom, computed on a 0.01 degree grid, with the most remote point of each nation and the ten most remote spots on Great Britain.}\label{fig:uk}\end{figure}
+
+\section{Limitations}
+First, the gazetteer threshold matters. Cities1000 omits villages and hamlets under 1,000 people, so a point far from a town may still be close to people: Inuit hamlets in the Canadian Arctic, Saharan oases, cattle stations in Australia and research stations in Antarctica. It also keeps a few smaller administrative seats, such as Port-aux-Fran\c{c}ais on Kerguelen and Grytviken on South Georgia, which shortens some island distances. Second, populations in Natural Earth are estimates of differing dates. Third, straight-line distance is not travel time: terrain, water, roads and borders all intervene. The Malaria Atlas Project's global accessibility map for 2015 \citep{weiss2018} measures travel time to cities and is a complementary view. Fourth, the 0.1 degree grid and the 1:50m coastline smooth small islands and narrow inlets; the maxima are refined to about a kilometre, but the shares are grid estimates. Fifth, continents and mainlands are conventions, and the Europe and Asia split in Russia is approximate.
+
+\section{Conclusion}
+Measured from people rather than from the sea, the most remote places on Earth are not where the classic poles of inaccessibility lie. They are on the ice and islands of the high latitudes and the Southern Ocean, and on the mainlands in the high Arctic, the Australian and Saharan deserts and the far north of Canada. A quarter of the land outside Antarctica is more than 100 km from a town of 1,000 people, but only about one per cent is more than 500 km away, and in a country like Britain the middle of nowhere is never more than {{uk.Scotland.d|int}} km from a town.
+
+\section*{Data and code availability}
+The interactive map is at \url{{{meta.page}}}. Data and code are at \url{{{meta.repo}}} and archived with this paper at \url{https://doi.org/{{meta.doi}}}. Derived data are released under CC BY 4.0 and code under the MIT licence. Town data: GeoNames, CC BY 4.0. Natural Earth is public domain.
+
+\section*{AI statement}
+I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.
+
+\begin{thebibliography}{9}
+\bibitem[GeoNames(2026)]{geonames} GeoNames (2026) cities1000: all cities with a population of 1,000 or more. CC BY 4.0. \url{https://www.geonames.org/}
+\bibitem[lutangar(2026)]{citiesjson} lutangar (2026) cities.json: GeoNames cities1000 as JSON, commit {{source.commit|raw}}. \url{https://github.com/lutangar/cities.json}
+\bibitem[Natural Earth(2026)]{naturalearth} Natural Earth (2026) Populated places, land, admin 0 countries and admin 1 states and provinces, 1:50m and 1:10m. Public domain. \url{https://www.naturalearthdata.com/}
+\bibitem[Weiss et al.(2018)]{weiss2018} Weiss, D. J. and others (2018) A global map of travel time to cities to assess inequalities in accessibility in 2015. \textit{Nature}. Malaria Atlas Project, University of Oxford.
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Middle of Nowhere</title>
+<meta name="description" content="A computed map of the most remote places on Earth: the land farthest from any town of 1,000 people, from cities of 100,000 and a million, and from the sea, for every continent and country. {{share.town.100|pc}} of the land outside Antarctica is more than 100 km from a town.">
+<meta property="og:title" content="The middle of nowhere: the places on Earth farthest from any town">
+<meta property="og:description" content="{{share.town.100|pc}} of the land outside Antarctica is more than 100 km from a place of 1,000 people. The most remote land of all is {{scraps.0.d|int}} km from a town; the most remote spot in Britain, near Cape Wrath, {{uk.Scotland.d|int}} km.">
+<meta property="og:image" content="https://maps.tristanhotham.com/remote-places/header.png">
+<meta property="og:url" content="https://maps.tristanhotham.com/remote-places/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<style>
+/* Middle of nowhere: pale paper, sand to ember to night for distance, a cold sea. */
+:root{
+  --bg:#F6F4EF; --panel:#EAE7DF; --fg:#1D2128; --muted:#636A72; --rule:#DDD8CC; --card:#FFFEFA; --border:#CBC5B8;
+  --hot:#B4462E; --cool:#2F6F8F; --vio:#5B4B8A; --sea2:#2E8B74; --ink:#22102F; --land:#E6E2D8; --sea:#E6EDF0;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#13141A; --panel:#1D1F27; --fg:#ECEEF1; --muted:#A2A8B0; --rule:#30343E; --card:#181A21; --border:#454B57;
+  --hot:#F0805F; --cool:#7DB6D2; --vio:#A897DE; --sea2:#6CC9AE; --ink:#E3D3F2; --land:#262A33; --sea:#161B22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#13141A; --panel:#1D1F27; --fg:#ECEEF1; --muted:#A2A8B0; --rule:#30343E; --card:#181A21; --border:#454B57;
+  --hot:#F0805F; --cool:#7DB6D2; --vio:#A897DE; --sea2:#6CC9AE; --ink:#E3D3F2; --land:#262A33; --sea:#161B22; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 18px/1.62 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:hidden}
+.wrap{max-width:700px;margin:0 auto;padding-block:28px 64px}
+.wrap .bleed{width:min(1180px,calc(100vw - 32px));margin-left:calc((100% - min(1180px,100vw - 32px))/2);margin-right:0}
+a{color:inherit;text-decoration-color:var(--hot);text-underline-offset:3px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kicker b{background:var(--ink);color:var(--bg);padding:5px 8px;font-weight:500}
+header.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;align-items:end;border-bottom:6px double var(--fg);padding-bottom:22px;margin-top:18px}
+h1{font:900 clamp(44px,11vw,92px)/.9 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 .a{color:var(--hot)}
+.mark{width:clamp(78px,16vw,128px);height:auto;display:block;color:var(--fg)}
+.dek{grid-column:1/-1;font-size:21px;line-height:1.42;margin:8px 0 0;max-width:56ch}
+.byline{font:400 13px/1.4 var(--mono);color:var(--muted);margin-top:14px}
+h2{font:800 34px/1.04 var(--display);letter-spacing:-.01em;margin:54px 0 10px;text-wrap:balance}
+h2 .n{font:500 13px/1 var(--mono);color:var(--hot);display:block;letter-spacing:.1em;margin-bottom:10px}
+h3{font:600 20px/1.25 var(--display);margin:28px 0 6px}
+p{margin:0 0 16px}
+.lede::first-letter{font:900 72px/.8 var(--display);float:left;margin:6px 10px 0 0;color:var(--hot)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:26px 0 8px}
+.stats div{background:var(--card);padding:14px 12px}
+.stats b{display:block;font:900 clamp(22px,4.4vw,32px)/1 var(--display);letter-spacing:-.01em}
+.stats b.h{color:var(--hot)} .stats b.c{color:var(--cool)} .stats b.v{color:var(--vio)} .stats b.p{color:var(--ink)}
+.stats span{font:400 12px/1.35 var(--mono);color:var(--muted);display:block;margin-top:6px}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.figure{margin:26px 0 30px}
+.fig-h{font:600 19px/1.25 var(--display);margin:0 0 4px}
+.fig-sub{font:400 13px/1.45 var(--mono);color:var(--muted);margin:0 0 12px}
+.src{font:400 12px/1.45 var(--mono);color:var(--muted);margin-top:10px}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);fill:var(--fg)}
+.lab{font-size:12px}.lab.m{fill:var(--muted)}.lab.b{font-weight:500}.lab.s{font-size:11px}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font:400 12px/1.45 var(--mono);padding:8px 10px;border-radius:3px;max-width:300px;z-index:1000;transform:translate(-50%,calc(-100% - 12px));display:none}
+.tip b{font-weight:500}
+.controls{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.scrollrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:2px;max-width:100%}
+.scrollrow .btn{flex:0 0 auto;white-space:nowrap}
+.ctl-l{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:2px;flex:0 0 auto;align-self:center}
+.btn{font:500 12px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:8px 10px;cursor:pointer;min-height:36px}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.2)}
+.btn:focus-visible,input:focus-visible,summary:focus-visible,select:focus-visible{outline:2px solid var(--hot);outline-offset:2px}
+.pick{display:flex;gap:8px;align-items:center;flex:1 1 320px;min-width:0}
+.pick label{font:500 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex:0 0 auto}
+select.big{font:400 15px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:9px 10px;min-height:40px;width:100%;min-width:0}
+input[type=search]{font:400 14px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:9px 10px;min-height:38px;width:100%}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+@media (max-width:900px){.mapgrid{grid-template-columns:1fr}}
+.side{background:var(--card);border:1px solid var(--border);padding:12px 12px 10px;font:400 13px/1.45 var(--mono);max-height:640px;overflow:auto}
+@media (max-width:900px){.side{max-height:none}}
+.side h4{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.side h4:first-child{margin-top:2px}
+.side .big{font:800 26px/1.1 var(--display);margin:2px 0 4px}
+.side .sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.side ol,.side ul{margin:4px 0 8px;padding-left:20px}
+.side li{margin:3px 0}
+.side li small,.side td small{color:var(--muted)}
+.side table{width:100%;border-collapse:collapse;margin:4px 0 6px}
+.side td{padding:4px 4px 4px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.side td.num{text-align:right;white-space:nowrap}
+.side td i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.back{font:400 12px var(--mono);background:none;border:0;color:var(--muted);padding:0;cursor:pointer;text-decoration:underline;margin-bottom:6px}
+.go{cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px}
+.lmap{height:600px;border:1px solid var(--border);background:var(--sea);border-radius:2px;position:relative}
+@media (max-width:600px){.lmap{height:min(62vh,460px)}}
+.maplibregl-map{font:400 12px/1.4 var(--mono)}
+.maplibregl-popup-content{background:var(--card);color:var(--fg);font:400 12.5px/1.45 var(--mono);padding:10px 12px;border-radius:3px;box-shadow:0 2px 10px rgba(0,0,0,.2);max-width:290px}
+.maplibregl-popup-content b.t{font:700 15px/1.2 var(--display);display:block;margin-bottom:2px}
+.maplibregl-popup-content small{color:var(--muted)}
+.maplibregl-popup-tip{border-top-color:var(--card)!important;border-bottom-color:var(--card)!important}
+.maplibregl-popup-close-button{color:var(--fg);font-size:18px;padding:0 6px}
+.maplibregl-ctrl-attrib{background:color-mix(in srgb,var(--card) 85%,transparent)!important;color:var(--muted)}
+.maplibregl-ctrl-attrib a{color:var(--fg)}
+.maplibregl-ctrl-group{background:#fff}
+.lyrWrap{position:absolute;top:10px;left:10px;z-index:5}
+.lyrBtn{background:var(--card,var(--bg));color:var(--fg);border:1px solid var(--border);border-radius:3px;font:600 12px/1 var(--mono);padding:8px 10px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.lyrBtn[aria-expanded="true"]{background:var(--fg);color:var(--bg)}
+.lyrPanel{background:var(--card,var(--bg));color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:10px 12px 8px;margin-top:6px;width:260px;box-shadow:0 2px 10px rgba(0,0,0,.15);font:400 12px/1.3 var(--mono);max-height:min(70vh,500px);overflow:auto}
+.lyrPanel[hidden]{display:none}
+.lyrPanel .row{margin:0 0 9px}
+.lyrPanel label{display:flex;gap:6px;align-items:center;cursor:pointer;font-weight:600}
+.lyrPanel input[type=range]{width:100%;accent-color:var(--fg)}
+.lyrPanel select{font:400 12px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--border);border-radius:2px;padding:2px 4px;width:100%;min-height:0}
+.lyrPanel .sub{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:11px;margin-top:3px}
+.lyrPanel .sub span{flex:0 0 58px}
+.lyrPanel .hd{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 7px;border-top:1px solid var(--rule);padding-top:9px}
+.lyrPanel .reset{font:400 11px var(--mono);color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+.mapnote{position:absolute;left:10px;bottom:10px;z-index:4;background:color-mix(in srgb,var(--card) 92%,transparent);border:1px solid var(--border);border-radius:3px;padding:6px 9px;font:400 12px/1.35 var(--mono);max-width:min(300px,62%);box-shadow:0 1px 4px rgba(0,0,0,.12);pointer-events:none}
+.mapnote:empty{display:none}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 13px var(--mono);color:var(--muted);pointer-events:none;z-index:1;text-align:center;padding:20px}
+.pole{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #22102F;box-shadow:0 0 0 2px rgba(255,255,255,.8);cursor:pointer}
+.pole.ant{border-color:#5B4B8A}
+.poleL{font:600 11px/1.15 var(--mono);color:#22102F;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;pointer-events:none;transform:translate(14px,-50%)}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font:400 12px/1.3 var(--mono);color:var(--muted);margin-top:8px;align-items:center}
+.legend span{display:inline-flex;align-items:center}
+.legend i{display:inline-block;width:13px;height:13px;margin-right:6px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+.legend i.sq{border-radius:2px}
+.ramp{display:flex;align-items:stretch;margin-top:8px;font:400 11px/1.2 var(--mono);color:var(--muted);max-width:640px}
+.ramp div{flex:1 1 0;min-width:0}
+.ramp div i{display:block;height:12px}
+.ramp div span{display:block;margin-top:3px;white-space:nowrap}
+@media (max-width:600px){.ramp div:nth-child(even) span{visibility:hidden}}
+.pull{font:600 26px/1.25 var(--display);border-left:6px solid var(--hot);padding:4px 0 4px 18px;margin:30px 0}
+.note{background:var(--panel);border:1px solid var(--rule);padding:14px 16px;font-size:16px;margin:22px 0}
+.note h3{margin-top:0}
+table.tbl{width:100%;border-collapse:collapse;font:400 13px/1.4 var(--mono)}
+table.tbl th{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 6px 6px 0;border-bottom:2px solid var(--fg);cursor:default}
+table.tbl th[data-s]{cursor:pointer}
+table.tbl td{padding:6px 6px 6px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.tbl td.r,table.tbl th.r{text-align:right;white-space:nowrap}
+table.tbl tr[data-i]{cursor:pointer}
+table.tbl tr[data-i]:hover td{background:var(--panel)}
+.tablebox{max-height:460px;overflow:auto;border:1px solid var(--border);background:var(--card);padding:0 10px}
+details{margin:14px 0}
+summary{font:500 13px/1.4 var(--mono);cursor:pointer;color:var(--fg);padding:8px 0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.cta a{font:500 13px/1 var(--mono);text-decoration:none;border:1px solid var(--fg);padding:11px 14px;border-radius:3px}
+.cta a.p{background:var(--hot);border-color:var(--hot);color:#fff}
+footer{border-top:6px double var(--fg);margin-top:56px;padding-top:16px;font:400 13px/1.55 var(--mono);color:var(--muted)}
+footer p{margin:0 0 10px}
+.theme{position:fixed;right:12px;bottom:12px;z-index:1002}
+@media print{.theme,.controls{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker"><b>Data study</b><span>Geography</span><span>World, computed</span></div>
+<header class="hero">
+  <h1>The middle of <span class="a">nowhere</span></h1>
+  <svg class="mark" viewBox="0 0 120 120" aria-hidden="true"><g id="heroMark"></g></svg>
+  <p class="dek">Where on Earth is farthest from everyone? I measured the distance from every patch of land to the nearest town of 1,000 people, the nearest big city and the nearest sea, and went looking for the middle of nowhere on every continent, in every country and in Britain.</p>
+</header>
+<div class="byline">Dr Tristan Hotham · Independent researcher · 2026 · Data: GeoNames (CC BY 4.0); Natural Earth</div>
+
+<div class="stats">
+  <div><b class="h">{{share.town.100|pc}}</b><span>of the land outside Antarctica is more than 100 km from a town of 1,000 people</span></div>
+  <div><b class="p">{{scraps.0.d|int}} km</b><span>from Marion Island, the most remote land outside Antarctica, to the nearest town</span></div>
+  <div><b class="v">{{antarctica.max.d|int}} km</b><span>to a town from the most remote point in Antarctica, which has none of its own</span></div>
+  <div><b class="c">{{uk.Scotland.d|int}} km</b><span>to a town from near Cape Wrath, the most remote spot in Britain</span></div>
+</div>
+
+<p class="lede">There is a long tradition of hunting for the poles of inaccessibility, the points on each continent farthest from the sea. But being far from the sea is not the same as being far from people: the most landlocked spot on Earth, in the Dzungarian basin of north-west China, is {{eurasia.ours_town|int}} km from a town. So I asked a different question. Which places are farthest from any town at all?</p>
+<p>To answer it I laid a grid of cells a tenth of a degree across (about 11 km at the equator) over all of the world's land, {{source.land_cells|int}} cells in all, each weighted by its true area. For every cell I measured the great-circle distance to the nearest of {{source.towns|int}} places with 1,000 or more people in the GeoNames gazetteer, to the nearest of {{source.c100k|int}} cities of 100,000 or more and {{source.c1m|int}} of a million or more in Natural Earth, and to the nearest coast. Then I looked for the maxima. Use the map below to switch between the four kinds of nowhere, pick a country to find its most remote point, or click anywhere to measure it.</p>
+
+<h2><span class="n">01 · The map</span>How far from everyone is everywhere?</h2>
+<div class="bleed" id="atlas">
+<div class="controls"><div class="scrollrow" id="measRow"><span class="ctl-l">Far from</span></div></div>
+<div class="controls">
+  <div class="pick"><label for="csel">Find the most remote point in</label><select class="big" id="csel" aria-label="Find the most remote point in a country or territory"></select></div>
+</div>
+<div class="controls"><div class="scrollrow" id="focusRow"><span class="ctl-l">Zoom to</span></div></div>
+<div class="mapgrid">
+  <div id="mapbox"><div id="map" class="lmap" role="application" aria-label="World map of the distance from every point on land to the nearest town or city"><div class="loading" id="loading">Loading the map...</div><div class="mapnote" id="mapnote"></div></div>
+    <div class="ramp" id="ramp"></div><div class="legend" id="legend"></div></div>
+  <div class="side" id="side" aria-live="polite"></div>
+</div>
+<p class="src">Colours: great-circle distance from each point on land to the nearest place in the chosen set, on a 0.1° grid. Circles: the most remote point of each continent's mainland for the chosen measure; small dots (Map layers): the most remote point of every country and territory from a town. Click anywhere on land to measure it; the town search loads {{source.towns|int}} places on first use. The Mercator map stops at 85° south, so the far interior of Antarctica is cut off. Data: GeoNames cities1000 (CC BY 4.0), Natural Earth. Base map tiles © Esri; place labels © OpenFreeMap, OpenMapTiles, OpenStreetMap contributors.</p>
+</div>
+
+<h2><span class="n">02 · How much nowhere?</span>A quarter of the land is 100 km from a town</h2>
+<p>Most of the land is not far from someone. Half of all land outside Antarctica lies within {{share.town.median|int}} km of a town of 1,000 people, and {{share.town.within25|int}}% within 25 km. But {{share.town.100|pc1}} of it, {{share.town.100_m|f1}} million square kilometres, is more than 100 km from the nearest town, and {{share.town.500|pc1}}, {{share.town.500_m|f2}} million square kilometres, more than 500 km. Big cities are much sparser: {{share.c1m.500|int}}% of the land is more than 500 km from a city of a million.</p>
+<div class="figure"><p class="fig-h">How much of the land lies within a given distance</p><p class="fig-sub">Share of the world's land outside Antarctica within each distance of a town, a city of 100,000+, a city of a million and the sea. Log scale. Hover the chart.</p><div class="chart" id="shareChart"></div><div class="legend" id="shareLegend"></div></div>
+<p>The nowhere is concentrated in the far north and in the deserts. Land north of 60°N is {{north.north60_land_pct|int}}% of the land outside Antarctica, but it holds {{north.far100_share_north60|int}}% of the land more than 100 km from a town and {{north.far500_share_north60|int}}% of the land more than 500 km away. Further south the peaks are the dry belts around the tropics: the Sahara and Arabia in the north, the Australian deserts and the Kalahari in the south.</p>
+<div class="figure"><p class="fig-h">Far from any town, by latitude</p><p class="fig-sub">Share of the land in each 5° band of latitude that is more than 100 km and more than 500 km from a town. Antarctica excluded. Hover a bar.</p><div class="chart" id="bandChart"></div><div class="legend" id="bandLegend"></div></div>
+
+<h2><span class="n">03 · Continents</span>The middle of nowhere, continent by continent</h2>
+<p>On the mainland of each continent, the point farthest from a town is:</p>
+<ul>
+<li><b>Asia</b>: Cape Chelyuskin, the northernmost point of the Eurasian mainland, on the Taymyr Peninsula: {{continents.Asia.town.d|int}} km from {{continents.Asia.town.town_name|raw}}.</li>
+<li><b>Australia</b>: the Great Victoria Desert in Western Australia, near the border with South Australia: {{continents.Australia and Oceania.town.d|int}} km from {{continents.Australia and Oceania.town.town_name|raw}}.</li>
+<li><b>Africa</b>: the Libyan Desert of north-western Sudan, near its borders with Libya and Chad: {{continents.Africa.town.d|int}} km from {{continents.Africa.town.town_name|raw}}.</li>
+<li><b>North America</b>: the far north of Saskatchewan, near where it meets Manitoba, Nunavut and the Northwest Territories: {{continents.North America.town.d|int}} km from {{continents.North America.town.town_name|raw}}.</li>
+<li><b>South America</b>: the rainforest of northern Pará in Brazil, near the border with Suriname: {{continents.South America.town.d|int}} km from {{continents.South America.town.town_name|raw}}.</li>
+<li><b>Europe</b>: the far north-eastern corner of European Russia, on the Kara Sea: {{continents.Europe.town.d|int}} km from {{continents.Europe.town.town_name|raw}}.</li>
+</ul>
+<div class="figure"><p class="fig-h">The most remote point of each mainland, four ways</p><p class="fig-sub">Kilometres from the most remote point of each continent's mainland to the nearest town, city of 100,000+, city of a million and coast. Click a bar to see the point on the map.</p><div class="chart" id="contChart"></div></div>
+<p>Islands are another matter. Nobody counts a town on a rock in the Southern Ocean, so the most remote land outside Antarctica is Marion Island, one of South Africa's Prince Edward Islands, {{scraps.0.d|int}} km from {{scraps.0.town_name|raw}} in the Eastern Cape. Next come the Crozet Islands, {{scraps.1.d|int}} km from {{scraps.1.town_name|raw}}, the French research base on Kerguelen. In the Arctic, Cape Columbia at the northern tip of Ellesmere Island, the northernmost point of Canada, is {{isl.Ellesmere Island.d|int}} km from {{isl.Ellesmere Island.town_name|raw}}, and the north coast of Greenland {{isl.Greenland.d|int}} km from {{isl.Greenland.town_name|raw}}. {{isl.Greenland.far100|int}}% of Greenland is more than 100 km from a town.</p>
+<div class="figure"><p class="fig-h">The big islands</p><p class="fig-sub">The fifteen largest islands with their most remote point from a town and the share of each island more than 100 km from one. Click a row to see it on the map.</p><div class="tablebox"><table class="tbl" id="islTable"></table></div></div>
+
+<h2><span class="n">04 · Far from the sea</span>The pole of inaccessibility is not remote</h2>
+<p>The classic pole of inaccessibility, the land farthest from any coast, is in Eurasia, in the Dzungarian basin of Xinjiang near the borders with Kazakhstan and Mongolia. It is usually placed at about 46°17′N 86°40′E. On the Natural Earth coastline I find the farthest point from the sea at {{eurasia.ours.lat|lat}} {{eurasia.ours.lon|lon}}, {{eurasia.ours.d|int}} km from the nearest coast and {{eurasia.sep_km|int}} km from that published position, where my coastline gives {{eurasia.ref_coast|int}} km. The exact spot depends on how finely the coast is drawn and on what counts as sea, so the difference is not surprising. What is surprising is how ordinary the place is: {{eurasia.ours_town|int}} km from {{eurasia.ours_town_name|raw}}, and {{eurasia.ours.c1m|int}} km from {{eurasia.ours.c1m_name|raw}}, a city of several million.</p>
+<p>The other continental poles from the sea fall where published calculations put them: near Obo in the Central African Republic ({{continents.Africa.coast.d|int}} km from the coast), in South Dakota ({{continents.North America.coast.d|int}} km), in Mato Grosso in Brazil ({{continents.South America.coast.d|int}} km) and west of Alice Springs in Australia ({{continents.Australia and Oceania.coast.d|int}} km). None of them is far from a town.</p>
+<div class="figure"><p class="fig-h">Famous empty places, checked</p><p class="fig-sub">The most remote point from a town inside each region, and the share of the region more than 100 km from one. Click a row to see it on the map.</p><div class="tablebox"><table class="tbl" id="candTable"></table></div></div>
+
+<h2><span class="n">05 · Countries</span>Every country's middle of nowhere</h2>
+<p>For each of {{source.n_countries|int}} countries and {{source.n_territories|int}} territories I found the point inside its borders farthest from any town, in that country or not. Counting islands, the top of the list belongs to countries with remote outposts: South Africa's Marion Island, Canada's Ellesmere Island, the north of Greenland, the western Aleutian Islands of the United States, {{countries.United States.d|int}} km from {{countries.United States.town_name|raw}} in Russia, and Russia's Franz Josef Land, closest to {{countries.Russia.town_name|raw}} on Svalbard. On each country's main land mass, Greenland leads, then Russia, Australia, Sudan and Canada.</p>
+<div class="figure"><p class="fig-h">The most remote point of each country's main land mass</p><p class="fig-sub">Countries over 100,000 km². Kilometres to the nearest town; purple bars: the nearest town is in another country. Click a bar to see the point.</p><div class="chart" id="ctyChart"></div><div class="legend" id="ctyLegend"></div></div>
+<p>The nearest town is often across a border. For {{n_abroad|int}} countries the most remote point is closest to a town in another country: the deep Sahara of Libya is nearest to {{countries.Libya.town_name|raw}} in Chad, Egypt's to {{countries.Egypt.town_name|raw}} in Libya, Saudi Arabia's Empty Quarter to {{countries.Saudi Arabia.town_name|raw}} in Yemen. At the other end, {{countries_under10|int}} countries have nowhere more than 10 km from a town, and the median country's most remote point is {{countries_median_d|int}} km from one.</p>
+<div class="figure"><p class="fig-h">All countries and territories</p><p class="fig-sub">Most remote point from a town (anywhere in the country, islands included), the nearest town, and the share of the land more than 100 km from a town. Click a heading to sort, a row to see it on the map.</p><div class="controls"><input type="search" id="ctyQ" placeholder="Filter by name" aria-label="Filter countries by name"></div><div class="tablebox"><table class="tbl" id="ctyTable"></table></div></div>
+
+<h2><span class="n">06 · Antarctica</span>A continent with no towns</h2>
+<p>Antarctica has research stations but no towns, and none of its stations is in the gazetteer, so on this measure the whole continent is nowhere. Every point of it is at least {{antarctica.min_town|int}} km from a town, half of it is more than {{antarctica.median_town|int}} km away, and the most remote point, on the polar plateau at {{antarctica.max.lat|lat}} {{antarctica.max.lon|lon}}, is {{antarctica.max.d|int}} km from {{antarctica.max.town_name|raw}}. That is why I report Antarctica separately and leave it out of the world shares. Its farthest point from the coast, on the Natural Earth outline, which follows the land rather than the floating ice shelves, is {{antarctica.coast_pole.d|int}} km inland.</p>
+
+<h2><span class="n">07 · Britain</span>Cape Wrath, Kielder and the Llŷn</h2>
+<p>In a crowded country remoteness shrinks to tens of kilometres. Half of the island of Great Britain is within {{gb.median|f1}} km of a town of 1,000 people. The most remote spot on the British mainland is near Cape Wrath, the north-west tip of Scotland, {{uk.Scotland.d|int}} km from {{uk.Scotland.town_name|raw}}, and almost all of the ten most remote spots are in the Highland council area. {{uk.Scotland.far10|int}}% of mainland Scotland is more than 10 km from a town, against {{uk.England.far10|f1}}% of England.</p>
+<div class="figure"><p class="fig-h">The most remote spots in the United Kingdom</p><p class="fig-sub">The ten most remote spots on the island of Great Britain, at least 30 km apart, and the most remote point of each nation. Click a row to see it on the map.</p><div class="tablebox"><table class="tbl" id="ukTable"></table></div></div>
+<p>England's most remote spot is in Kielder Forest in Northumberland, {{uk.England.d|int}} km from a town, and the nearest town is {{uk.England.town_name|raw}}, across the border in Scotland. Counting islands, Lundy in the Bristol Channel beats it at {{uk.England.with_islands.d|int}} km. In Wales the most remote spot is the very tip of the Llŷn Peninsula, {{uk.Wales.d|int}} km from {{uk.Wales.town_name|raw}}: on an island as busy as Britain, the end of a peninsula is often farther from a town than any moorland. In Northern Ireland it is in the Sperrin Mountains, {{uk.Northern Ireland.d|int}} km from {{uk.Northern Ireland.town_name|raw}}.</p>
+
+<h2><span class="n">08 · How I did this</span>Methods and caveats</h2>
+<p><b>Data.</b> Towns are the {{source.towns|int}} places in the GeoNames cities1000 gazetteer, which lists every populated place with 1,000 or more people (packaged by lutangar/cities.json, commit {{source.commit|raw}}). It has no population figures, so the larger cities come from Natural Earth's populated places, {{source.ne_places|int}} of them, of which {{source.c100k|int}} have 100,000 or more people and {{source.c1m|int}} a million or more. Land and coast are Natural Earth's 1:50m land outlines; lakes count as land and the Caspian Sea as sea. Countries are Natural Earth's 1:10m outlines.</p>
+<p><b>Method.</b> A 0.1° grid over the land ({{source.land_cells|int}} cells), each cell weighted by its true area on the sphere so that the small cells near the poles are not over-counted. Distances are great-circle distances on a sphere of radius {{source.radius_km|f1}} km, found with a k-d tree on unit vectors. Each maximum was refined on a 0.01° grid, so positions are good to about a kilometre. A country's most remote point is the point inside its outline farthest from any town, wherever the town is. Continental mainlands are the Natural Earth land polygons, so a few islands that the 1:50m outline joins to the mainland across narrow straits count as mainland; Europe and Asia are split along the Urals.</p>
+<p><b>What this is not.</b> GeoNames cities1000 misses villages and hamlets under 1,000 people, so "far from a town" does not mean uninhabited: the far north of Canada has Inuit hamlets, the Sahara oases, and Antarctica research stations. It also keeps a few smaller places as administrative seats, such as the base at Port-aux-Français on Kerguelen. Straight-line distance is not travel time: 50 km of Highland bog or Amazon forest can take longer to cross than 500 km of desert road. For travel time, see the Malaria Atlas Project's global map of accessibility to cities for 2015 (Weiss and others, Nature, 2018), which measures something different and complementary. Natural Earth city populations are estimates of varying age.</p>
+<details><summary>Sources and licences</summary>
+<ul>
+<li>GeoNames, cities1000 (all populated places of 1,000 or more people), https://www.geonames.org/, CC BY 4.0, as packaged by lutangar/cities.json (https://github.com/lutangar/cities.json).</li>
+<li>Natural Earth populated places, land, countries and first-level divisions (public domain), https://www.naturalearthdata.com/.</li>
+<li>Base map tiles © Esri; place labels © OpenFreeMap, OpenMapTiles, OpenStreetMap contributors.</li>
+</ul></details>
+
+<div class="cta"><a class="p" href="https://doi.org/10.5281/zenodo.23873015">Read the paper</a><a href="https://github.com/Tristan-Hotham/remote-places">Data and code</a><a href="https://blog.tristanhotham.com/2026/10/31/remote-places/">Blog post</a></div>
+
+<footer>
+<p>Dr Tristan Hotham, Independent researcher. ORCID <a href="https://orcid.org/0000-0003-4931-9349">0000-0003-4931-9349</a>.</p>
+<p>Cite as: Hotham, T. (2026) The middle of nowhere: the most remote places on Earth, measured from every town. Zenodo. <a href="https://doi.org/10.5281/zenodo.23873015">https://doi.org/10.5281/zenodo.23873015</a></p>
+<p>Data: GeoNames (CC BY 4.0); Natural Earth (public domain). Licence: derived data and text CC BY 4.0, code MIT.</p>
+<p>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</p>
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+<button class="btn theme" id="theme" aria-label="Toggle dark mode">◐</button>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+const R = /*RESULTS*/;
+const SITE = /*SITE*/;
+const fmt = n => n == null || n === "" ? "n/a" : Math.round(n).toLocaleString("en-GB");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const tip = document.getElementById("tip");
+function showTip(h, x, y) { tip.innerHTML = h; tip.style.display = "block"; const w = tip.offsetWidth; x = Math.max(w / 2 + 8, Math.min(innerWidth - w / 2 - 8, x)); tip.style.left = x + scrollX + "px"; tip.style.top = y + scrollY + "px"; }
+function hideTip() { tip.style.display = "none"; }
+document.addEventListener("click", hideTip);
+const NS = "http://www.w3.org/2000/svg";
+const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const lbl = (svg, x, y, s, cls = "lab", anchor = "start") => { const t = el("text", { x, y, class: cls, "text-anchor": anchor }, svg); t.textContent = s; return t; };
+const redraws = [];
+function resp(box, render) { let last = 0; const go = force => { const w = Math.max(280, Math.round(box.clientWidth)); if (!force && Math.abs(w - last) < 4) return; last = w; box.innerHTML = ""; render(w, w < 560); }; new ResizeObserver(() => go()).observe(box); go(); redraws.push(() => go(true)); }
+const isDark = () => { const r = document.documentElement; return r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const small = () => innerWidth < 900;
+const ll = (la, lo) => `${Math.abs(la).toFixed(2)}°${la >= 0 ? "N" : "S"} ${Math.abs(lo).toFixed(2)}°${lo >= 0 ? "E" : "W"}`;
+const MEAS = SITE.measures;   // [key, short, long, colour]
+const MK = MEAS.map(m => m[0]);
+const BINS = [0, 10, 25, 50, 100, 250, 500, 1000, 2000, 3000];
+const BINC = ["#FFF6DD", "#FCE3A8", "#F7C978", "#EFA658", "#DD7A40", "#BF4F3A", "#963247", "#6A2353", "#43184E", "#22102F"];
+const MCOL = () => ({ town: css("--hot"), c100k: css("--cool"), c1m: css("--vio"), coast: css("--sea2") });
+const CTY = SITE.countries;   // [name, iso, kind, continent, lat, lon, d, town, town_country, tlat, tlon, coast, c100k, c100k_name, c1m, c1m_name, far100, km2, mean, far25, mlat, mlon, md, mtown, mtown_country]
+const CN = {}; SITE.continents.forEach(c => CN[c.c] = c);
+const CONTS = SITE.continents.map(c => c.c);
+
+/* hero mark: a lone dot far from a cluster of towns */
+(function () {
+  const g = document.getElementById("heroMark");
+  [[18, 92], [28, 100], [14, 104], [32, 88], [24, 110], [40, 104], [10, 86]].forEach(([x, y]) => el("circle", { cx: x, cy: y, r: 3.2, fill: "currentColor" }, g));
+  [36, 54, 72].forEach((r, i) => el("circle", { cx: 26, cy: 98, r, fill: "none", stroke: "#B4462E", "stroke-width": 2, opacity: .75 - i * .2, "stroke-dasharray": i ? "4 4" : "" }, g));
+  el("circle", { cx: 98, cy: 22, r: 8, fill: "#22102F", stroke: "#fff", "stroke-width": 2 }, g);
+  el("path", { d: "M98 34 L98 46 M92 40 L104 40", stroke: "currentColor", "stroke-width": 2 }, g);
+})();
+
+/* ---------- state ---------- */
+const S = { m: "town", sel: null, pick: null };
+const OFM = "https://tiles.openfreemap.org";
+const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+const LYDEF = { base: "plain", hills: false, hillK: 35, dist: true, distK: 85, labels: true, borders: true, towns: false, cities: false, poles: true, cpts: true };
+const LY = { ...LYDEF };
+try { Object.assign(LY, JSON.parse(localStorage.getItem("rp_layers") || "{}")); } catch (e) {}
+const saveLY = () => { try { localStorage.setItem("rp_layers", JSON.stringify(LY)); } catch (e) {} };
+const HOME = () => small() ? { center: [20, 25], zoom: 0.35 } : { center: [15, 25], zoom: 1.15 };
+const MERC = 85.0511287798;
+let map = null, ready = false;
+const empty = () => ({ type: "FeatureCollection", features: [] });
+
+/* ---------- points loaded on demand: towns and coast, for measuring any clicked point ---------- */
+let TOWNS = null, COAST = null, CITIES = null, loadingPts = null;
+function loadPts() {
+  if (loadingPts) return loadingPts;
+  loadingPts = Promise.all([fetch("data/towns.json").then(r => r.json()), fetch("data/coast.json").then(r => r.json())]).then(([t, c]) => {
+    const n = t.name.length, la = new Float32Array(n), lo = new Float32Array(n); let a = 0;
+    for (let i = 0; i < n; i++) { a += t.dlat[i]; la[i] = a / 100; lo[i] = t.lon[i] / 100; }
+    TOWNS = { la, lo, name: t.name, c: t.c, cc: t.cc };
+    const m = c.dlat.length, cla = new Float32Array(m), clo = new Float32Array(m); let x = 0, y = 0;
+    for (let i = 0; i < m; i++) { x += c.dlat[i]; y += c.dlon[i]; cla[i] = x / 100; clo[i] = y / 100; }
+    COAST = { la: cla, lo: clo };
+    if (ready && LY.towns) drawTowns();
+  }).catch(() => { loadingPts = null; });
+  return loadingPts;
+}
+fetch("data/cities.json").then(r => r.json()).then(c => { CITIES = c; if (ready) drawCities(); }).catch(() => {});
+const RAD = Math.PI / 180, RE = 6371.0088;
+function gc(la1, lo1, la2, lo2) { const a = Math.sin((la2 - la1) * RAD / 2) ** 2 + Math.cos(la1 * RAD) * Math.cos(la2 * RAD) * Math.sin((lo2 - lo1) * RAD / 2) ** 2; return 2 * RE * Math.asin(Math.min(1, Math.sqrt(a))); }
+function nearest(la0, lo0, LA, LO) { let b = 1e9, bi = -1; const c0 = Math.cos(la0 * RAD);
+  for (let i = 0; i < LA.length; i++) { const dla = LA[i] - la0; if (Math.abs(dla) * 111.2 > b) continue; let dlo = Math.abs(LO[i] - lo0); if (dlo > 180) dlo = 360 - dlo; if (dlo * 111.2 * Math.max(c0, Math.cos(LA[i] * RAD)) > b * 1.01 + 5 && Math.abs(dla) < 80) continue; const d = gc(la0, lo0, LA[i], LO[i]); if (d < b) { b = d; bi = i; } }
+  return [b, bi]; }
+function nearCity(la0, lo0, min) { let b = 1e9, bc = null; (CITIES || []).forEach(c => { if (c.pop < min) return; const d = gc(la0, lo0, c.lat, c.lon); if (d < b) { b = d; bc = c; } }); return [b, bc]; }
+
+/* ---------- map ---------- */
+function baseStyle() {
+  const c = { sea: css("--sea"), land: css("--land"), border: css("--border") };
+  return {
+    version: 8, glyphs: OFM + "/fonts/{fontstack}/{range}.pbf",
+    sources: {
+      world: { type: "geojson", data: empty() },
+      hills: { type: "raster", tiles: [ESRI + "Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}"], tileSize: 256, maxzoom: 16, attribution: "Hillshade: Esri, USGS, NASA, CGIAR" },
+      relief: { type: "raster", tiles: [ESRI + "World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}"], tileSize: 256, maxzoom: 13, attribution: "Relief: Esri" },
+      sat: { type: "raster", tiles: [ESRI + "World_Imagery/MapServer/tile/{z}/{y}/{x}"], tileSize: 256, maxzoom: 18, attribution: "Imagery: Esri, Maxar, Earthstar Geographics" },
+      ...Object.fromEntries(MK.map(k => ["d_" + k, { type: "raster", tiles: [location.href.split("#")[0].split("?")[0].replace(/[^/]*$/, "") + `img/tiles/${k}/{z}/{x}/{y}.png`], tileSize: 512, minzoom: 0, maxzoom: 3, attribution: "Distances from GeoNames and Natural Earth" }])),
+      towns: { type: "geojson", data: empty() }, cities: { type: "geojson", data: empty() }, cpts: { type: "geojson", data: empty() }, sel: { type: "geojson", data: empty() }
+    },
+    layers: [
+      { id: "bg", type: "background", paint: { "background-color": c.sea } },
+      { id: "relief", type: "raster", source: "relief", layout: { visibility: "none" }, paint: { "raster-opacity": .85 } },
+      { id: "sat", type: "raster", source: "sat", layout: { visibility: "none" } },
+      { id: "land", type: "fill", source: "world", paint: { "fill-color": c.land } },
+      ...MK.map(k => ({ id: "dist_" + k, type: "raster", source: "d_" + k, layout: { visibility: k === S.m ? "visible" : "none" }, paint: { "raster-opacity": .85, "raster-resampling": "nearest", "raster-fade-duration": 0 } })),
+      { id: "hills", type: "raster", source: "hills", layout: { visibility: "none" }, paint: { "raster-opacity": .35 } },
+      { id: "borders", type: "line", source: "world", paint: { "line-color": "rgba(60,50,60,.45)", "line-width": .6 } },
+      { id: "cities", type: "circle", source: "cities", paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 0, ["case", [">=", ["get", "pop"], 1e6], 3, 1.6], 6, ["case", [">=", ["get", "pop"], 1e6], 6, 3.5]], "circle-color": ["case", [">=", ["get", "pop"], 1e6], "#5B4B8A", "#2F6F8F"], "circle-stroke-color": "#fff", "circle-stroke-width": .8 } },
+      { id: "towns", type: "circle", source: "towns", paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 0, .6, 4, 1.4, 8, 3], "circle-color": "#1D2128", "circle-opacity": .7 } },
+      { id: "sel-line", type: "line", source: "sel", filter: ["==", ["geometry-type"], "LineString"], paint: { "line-color": "#22102F", "line-width": 2, "line-dasharray": [2, 2] } },
+      { id: "cpts", type: "circle", source: "cpts", paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 0, 2.6, 5, 5], "circle-color": "#fff", "circle-stroke-color": "#22102F", "circle-stroke-width": 1.6 } },
+      { id: "sel-pt", type: "circle", source: "sel", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": ["case", ["==", ["get", "k"], "town"], 5, 8], "circle-color": ["case", ["==", ["get", "k"], "town"], "#1D2128", "#B4462E"], "circle-stroke-color": "#fff", "circle-stroke-width": 2 } }
+    ]
+  };
+}
+function labelLayers() {
+  return [
+    { id: "places", type: "symbol", source: "ofm", "source-layer": "place", minzoom: 3, filter: ["in", ["get", "class"], ["literal", ["city", "town"]]], layout: { "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]], "text-font": ["Noto Sans Regular"], "text-size": ["interpolate", ["linear"], ["zoom"], 3, 10, 8, 13], "symbol-sort-key": ["get", "rank"] }, paint: { "text-color": "#1D2128", "text-halo-color": "#FFFEFA", "text-halo-width": 1.4, "text-opacity": .85 } },
+    { id: "cnames", type: "symbol", source: "ofm", "source-layer": "place", maxzoom: 7, filter: ["==", ["get", "class"], "country"], layout: { "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]], "text-font": ["Noto Sans Bold"], "text-size": ["interpolate", ["linear"], ["zoom"], 1, 9, 5, 12], "text-transform": "uppercase", "text-letter-spacing": .08, "text-max-width": 7 }, paint: { "text-color": "#1D2128", "text-opacity": .6, "text-halo-color": "#FFFEFA", "text-halo-width": 1.2 } }
+  ];
+}
+function addLabels() {
+  try { map.addSource("ofm", { type: "vector", url: OFM + "/planet", attribution: '<a href="https://openfreemap.org">OpenFreeMap</a> © <a href="https://www.openmaptiles.org/">OpenMapTiles</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' });
+    labelLayers().forEach(l => map.addLayer(l, "sel-line")); } catch (e) { console.warn("labels unavailable", e); }
+}
+function applyLayers() {
+  if (!ready) return;
+  const vis = (id, on) => { if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", on ? "visible" : "none"); };
+  vis("relief", LY.base === "relief"); vis("sat", LY.base === "satellite"); vis("land", LY.base === "plain");
+  vis("hills", LY.hills); map.setPaintProperty("hills", "raster-opacity", Math.min(1, LY.hillK / 100));
+  MK.forEach(k => { vis("dist_" + k, LY.dist && k === S.m); map.setPaintProperty("dist_" + k, "raster-opacity", LY.distK / 100); });
+  vis("borders", LY.borders); vis("places", LY.labels); vis("cnames", LY.labels); vis("towns", LY.towns); vis("cities", LY.cities); vis("cpts", LY.cpts);
+  map.setPaintProperty("bg", "background-color", css("--sea")); map.setPaintProperty("land", "fill-color", css("--land"));
+  map.setPaintProperty("borders", "line-color", isDark() ? "rgba(230,230,240,.4)" : "rgba(60,50,60,.45)");
+  document.querySelectorAll(".poleM").forEach(e => e.style.display = LY.poles ? "" : "none");
+  if (LY.towns) { if (TOWNS) drawTowns(); else { note("Loading " + fmt(R.source.towns) + " towns..."); loadPts().then(() => note("")); } }
+}
+function drawTowns() { if (!ready || !TOWNS) return; const f = []; for (let i = 0; i < TOWNS.la.length; i++) f.push({ type: "Feature", geometry: { type: "Point", coordinates: [TOWNS.lo[i], TOWNS.la[i]] }, properties: {} }); map.getSource("towns").setData({ type: "FeatureCollection", features: f }); }
+function drawCities() { if (!ready || !CITIES) return; map.getSource("cities").setData({ type: "FeatureCollection", features: CITIES.map(c => ({ type: "Feature", geometry: { type: "Point", coordinates: [c.lon, c.lat] }, properties: { pop: c.pop, name: c.name } })) }); }
+function drawCpts() { if (!ready) return; map.getSource("cpts").setData({ type: "FeatureCollection", features: CTY.map((c, i) => ({ type: "Feature", geometry: { type: "Point", coordinates: [c[5], c[4]] }, properties: { i } })) }); }
+let syncLayers = () => {};
+function layerPanel() {
+  const box = document.createElement("div"); box.className = "lyrWrap";
+  box.innerHTML = `<button class="lyrBtn" aria-expanded="false">Map layers</button>
+<div class="lyrPanel" hidden>
+ <div class="row"><label style="font-weight:600">Base map</label><div class="sub"><select data-k="base" aria-label="Base map"><option value="plain">Plain paper</option><option value="relief">Shaded relief</option><option value="satellite">Satellite</option></select></div></div>
+ <div class="row"><label><input type="checkbox" data-k="dist"> Distance colours</label><div class="sub"><span>strength</span><input type="range" data-k="distK" min="20" max="100" step="5" aria-label="Distance colour strength"></div></div>
+ <div class="row"><label><input type="checkbox" data-k="hills"> Hills and mountains</label><div class="sub"><span>strength</span><input type="range" data-k="hillK" min="10" max="100" step="5" aria-label="Hill shading strength"></div></div>
+ <div class="row"><label><input type="checkbox" data-k="labels"> Labels (place and country names)</label></div>
+ <div class="row"><label><input type="checkbox" data-k="borders"> Borders</label></div>
+ <div class="hd">Places</div>
+ <div class="row"><label><input type="checkbox" data-k="towns"> Towns of 1,000+ (GeoNames)</label></div>
+ <div class="row"><label><input type="checkbox" data-k="cities"> Cities of 100,000+ and 1,000,000+</label></div>
+ <div class="hd">Remote points</div>
+ <div class="row"><label><input type="checkbox" data-k="poles"> Continents' most remote points</label></div>
+ <div class="row"><label><input type="checkbox" data-k="cpts"> Every country's most remote point</label></div>
+ <button class="reset">Reset layers</button>
+</div>`;
+  ["click", "dblclick", "mousedown", "touchstart", "wheel"].forEach(t => box.addEventListener(t, e => e.stopPropagation(), { passive: t !== "click" }));
+  document.getElementById("map").appendChild(box);
+  const btn = box.querySelector(".lyrBtn"), pan = box.querySelector(".lyrPanel");
+  btn.onclick = () => { const o = pan.hidden; pan.hidden = !o; btn.setAttribute("aria-expanded", o); };
+  const sync = () => pan.querySelectorAll("[data-k]").forEach(i => { const k = i.dataset.k; if (i.type === "checkbox") i.checked = LY[k]; else i.value = LY[k]; });
+  pan.querySelectorAll("[data-k]").forEach(i => i.addEventListener(i.type === "range" ? "input" : "change", () => {
+    const k = i.dataset.k; LY[k] = i.type === "checkbox" ? i.checked : (k === "base" ? i.value : +i.value);
+    if (k === "hillK") LY.hills = true; if (k === "distK") LY.dist = true;
+    sync(); saveLY(); applyLayers(); legend();
+  }));
+  pan.querySelector(".reset").onclick = () => { Object.assign(LY, LYDEF); saveLY(); sync(); applyLayers(); legend(); };
+  sync(); syncLayers = sync;
+}
+let poleMarkers = [];
+function drawPoles() {
+  poleMarkers.forEach(m => m.remove()); poleMarkers = [];
+  if (!ready) return;
+  SITE.continents.forEach(c => { const p = c[S.m]; const d = document.createElement("div"); d.className = "poleM";
+    d.innerHTML = `<div class="pole${c.c === "Antarctica" ? " ant" : ""}" title="${esc(c.m)}"></div>`; d.style.display = LY.poles ? "" : "none";
+    d.firstChild.addEventListener("click", e => { e.stopPropagation(); pickPole(c.c); });
+    poleMarkers.push(new maplibregl.Marker({ element: d }).setLngLat([p.lon, Math.max(-MERC + .5, p.lat)]).addTo(map)); });
+}
+let popup = null;
+function openPopup(lo, la, h) { if (!ready) return; if (popup) popup.remove(); popup = new maplibregl.Popup({ maxWidth: "290px", offset: 10 }).setLngLat([lo, la]).setHTML(h).addTo(map); }
+function selLine(la, lo, tla, tlo) {
+  if (!ready) return; const n = 64, pts = [];
+  const a = [la * RAD, lo * RAD], b = [tla * RAD, tlo * RAD], v = p => [Math.cos(p[0]) * Math.cos(p[1]), Math.cos(p[0]) * Math.sin(p[1]), Math.sin(p[0])];
+  const A = v(a), B = v(b), om = Math.acos(Math.min(1, A[0] * B[0] + A[1] * B[1] + A[2] * B[2]));
+  for (let i = 0; i <= n; i++) { const t = i / n, s1 = om ? Math.sin((1 - t) * om) / Math.sin(om) : 1 - t, s2 = om ? Math.sin(t * om) / Math.sin(om) : t; const x = s1 * A[0] + s2 * B[0], y = s1 * A[1] + s2 * B[1], z = s1 * A[2] + s2 * B[2]; pts.push([Math.atan2(y, x) / RAD, Math.atan2(z, Math.hypot(x, y)) / RAD]); }
+  for (let i = 1; i < pts.length; i++) { while (pts[i][0] - pts[i - 1][0] > 180) pts[i][0] -= 360; while (pts[i][0] - pts[i - 1][0] < -180) pts[i][0] += 360; }
+  map.getSource("sel").setData({ type: "FeatureCollection", features: [{ type: "Feature", geometry: { type: "LineString", coordinates: pts }, properties: {} },
+    { type: "Feature", geometry: { type: "Point", coordinates: [tlo, tla] }, properties: { k: "town" } }, { type: "Feature", geometry: { type: "Point", coordinates: [lo, la] }, properties: { k: "pt" } }] });
+}
+function clearSel() { if (ready) map.getSource("sel").setData(empty()); if (popup) popup.remove(); }
+function fly(la, lo, z) { if (!ready) return; map.flyTo({ center: [lo, Math.max(-80, Math.min(82, la))], zoom: z, speed: 1.6 }); }
+function toMap() { if (small()) document.getElementById("mapbox").scrollIntoView({ behavior: "smooth", block: "start" }); }
+
+/* ---------- picks ---------- */
+function pickCountry(i, move = true) {
+  const c = CTY[i]; if (!c) return; S.sel = { t: "c", i }; S.pick = null;
+  document.getElementById("csel").value = String(i);
+  if (S.m !== "town") setMeasure("town");
+  selLine(c[4], c[5], c[9], c[10]);
+  const z = c[17] > 2e6 ? 4 : c[17] > 2e5 ? 5 : c[17] > 2e4 ? 6.5 : 8;
+  if (move) { fly(c[4], c[5], Math.min(z, Math.max(3, 9.5 - Math.log10(Math.max(1, c[6])) * 2.2))); toMap(); }
+  openPopup(c[5], c[4], `<b class="t">${esc(c[0])}</b>Most remote point from a town<br>${ll(c[4], c[5])}<br><b>${fmt(c[6])} km</b> to ${esc(c[7])}${c[8] !== c[0] ? `, ${esc(c[8])}` : ""}<br><small>coast ${fmt(c[11])} km · city of 100,000+ ${fmt(c[12])} km (${esc(c[13])}) · city of a million ${fmt(c[14])} km (${esc(c[15])})</small>`);
+  side();
+}
+function pickPole(cn) {
+  const c = CN[cn], p = c[S.m]; S.sel = { t: "p", c: cn }; S.pick = null;
+  const t = S.m === "coast" ? null : S.m === "town" ? [p.town_lat, p.town_lon, p.town_name, p.town_country] : [p[S.m + "_lat"], p[S.m + "_lon"], p[S.m + "_name"], ""];
+  if (t && t[0] != null) selLine(p.lat, p.lon, t[0], t[1]); else clearSel();
+  fly(p.lat, p.lon, cn === "Antarctica" ? 2 : 4); toMap();
+  const mm = MEAS.find(m => m[0] === S.m);
+  openPopup(p.lon, Math.max(-MERC + .5, p.lat), `<b class="t">${esc(c.m)}</b>Farthest from ${esc(mm[1])}<br>${ll(p.lat, p.lon)}${p.lat < -MERC ? " (beyond the edge of this map)" : ""}<br><b>${fmt(p.d)} km</b>${t ? ` to ${esc(t[2])}` : " to the coast"}<br><small>${esc(p.country || "")} · town ${fmt(p.town)} km (${esc(p.town_name)}) · coast ${fmt(p.coast)} km</small>`);
+  side();
+}
+function pickPoint(la, lo, name) {   // islands, candidates, UK spots
+  S.sel = { t: "x", la, lo, name }; S.pick = null; measure(la, lo, name, true);
+}
+async function measure(la, lo, name, move) {
+  S.pick = { la, lo, name, busy: true }; side(); if (move) { fly(la, lo, 5); toMap(); }
+  await loadPts(); if (!TOWNS) { S.pick.busy = false; S.pick.err = true; side(); return; }
+  const [dt, ti] = nearest(la, lo, TOWNS.la, TOWNS.lo), [dc] = nearest(la, lo, COAST.la, COAST.lo), [d1, c1] = nearCity(la, lo, 1e5), [d2, c2] = nearCity(la, lo, 1e6);
+  Object.assign(S.pick, { busy: false, dt, town: TOWNS.name[ti], cc: TOWNS.cc[TOWNS.c[ti]], tla: TOWNS.la[ti], tlo: TOWNS.lo[ti], dc, d1, c1, d2, c2 });
+  selLine(la, lo, TOWNS.la[ti], TOWNS.lo[ti]);
+  openPopup(lo, la, `<b class="t">${esc(name || ll(la, lo))}</b>${name ? ll(la, lo) + "<br>" : ""}<b>${fmt(dt)} km</b> to the nearest town, ${esc(TOWNS.name[ti])} (${esc(TOWNS.cc[TOWNS.c[ti]])})<br><small>city of 100,000+: ${fmt(d1)} km (${esc(c1 ? c1.name : "")}) · city of a million: ${fmt(d2)} km (${esc(c2 ? c2.name : "")}) · coast: about ${fmt(dc)} km</small>`);
+  side();
+}
+
+/* ---------- measure buttons, selector, focus ---------- */
+function setMeasure(k) {
+  S.m = k; document.querySelectorAll("#measRow .btn").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === k));
+  if (ready) { applyLayers(); drawPoles(); }
+  legend(); side();
+}
+(function measRow() {
+  const row = document.getElementById("measRow");
+  MEAS.forEach(([k, short]) => { const b = document.createElement("button"); b.className = "btn"; b.dataset.m = k; b.textContent = short.replace(/^a /, "").replace(/^the /, ""); b.setAttribute("aria-pressed", k === S.m); b.onclick = () => { S.sel = null; S.pick = null; clearSel(); setMeasure(k); }; row.appendChild(b); });
+})();
+(function selector() {
+  const s = document.getElementById("csel"); const o = [`<option value="">Choose a country or territory...</option>`];
+  const grp = (k, t) => o.push(`<optgroup label="${t}">` + CTY.map((c, i) => [c, i]).filter(([c]) => c[2] === k).map(([c, i]) => `<option value="${i}">${esc(c[0])} (${fmt(c[6])} km)</option>`).join("") + `</optgroup>`);
+  grp("country", "Countries"); grp("territory", "Territories");
+  s.innerHTML = o.join(""); s.onchange = () => { if (s.value !== "") pickCountry(+s.value); };
+})();
+(function focusRow() {
+  const row = document.getElementById("focusRow");
+  const F = [["World", null], ["Sahara", [[-17, 12], [40, 34]]], ["Arctic Canada and Greenland", [[-125, 58], [-15, 84]]], ["Siberia", [[60, 50], [180, 80]]], ["Australia", [[112, -40], [155, -10]]], ["Amazon", [[-75, -15], [-45, 6]]], ["Tibet", [[75, 27], [100, 40]]], ["Britain", [[-8.5, 49.8], [2, 59]]]];
+  F.forEach(([n, b]) => { const x = document.createElement("button"); x.className = "btn"; x.textContent = n; x.onclick = () => { if (!ready) return; if (!b) { S.sel = null; S.pick = null; clearSel(); map.flyTo(HOME()); side(); } else map.fitBounds(b, { padding: 20, duration: 900 }); toMap(); }; row.appendChild(x); });
+})();
+function binOf(d) { let k = 0; for (let i = 0; i < BINS.length; i++) if (d >= BINS[i]) k = i; return k; }
+function legend() {
+  const mm = MEAS.find(m => m[0] === S.m);
+  document.getElementById("ramp").innerHTML = BINC.map((c, i) => `<div><i style="background:${c}"></i><span>${i === 0 ? "0 km" : fmt(BINS[i])}${i === BINC.length - 1 ? "+" : ""}</span></div>`).join("");
+  let h = `<span>Distance to ${esc(mm[2])}</span>`;
+  if (LY.poles) h += `<span><i style="background:#fff;border:3px solid #22102F"></i>continent's most remote point</span>`;
+  if (LY.cpts) h += `<span><i style="background:#fff;border:1.6px solid #22102F;width:9px;height:9px"></i>country's most remote point</span>`;
+  if (LY.towns) h += `<span><i style="background:#1D2128;width:6px;height:6px"></i>town of 1,000+</span>`;
+  if (LY.cities) h += `<span><i style="background:#2F6F8F"></i>city of 100,000+</span><span><i style="background:#5B4B8A"></i>of a million</span>`;
+  document.getElementById("legend").innerHTML = h;
+}
+function note(h) { const n = document.getElementById("mapnote"); if (n) n.innerHTML = h || ""; }
+
+/* ---------- side panel ---------- */
+function side() {
+  const box = document.getElementById("side"), mm = MEAS.find(m => m[0] === S.m), k = S.m, g = SITE.global[k], sh = R.share[k];
+  let h = "";
+  if (S.pick) {
+    const p = S.pick;
+    h = `<button class="back">Back</button><h4>${p.name ? "Place" : "The point you clicked"}</h4><div class="big">${esc(p.name || ll(p.la, p.lo))}</div><p class="sub">${ll(p.la, p.lo)}</p>`;
+    if (p.busy) h += `<p class="sub">Measuring, loading ${fmt(R.source.towns)} towns...</p>`;
+    else if (p.err) h += `<p class="sub">The town list could not be loaded.</p>`;
+    else h += `<table><tr><td>Nearest town of 1,000+</td><td class="num">${fmt(p.dt)} km</td></tr><tr><td colspan="2"><small>${esc(p.town)} (${esc(p.cc)})</small></td></tr>
+<tr><td>Nearest city of 100,000+</td><td class="num">${fmt(p.d1)} km</td></tr><tr><td colspan="2"><small>${esc(p.c1 ? p.c1.name + ", " + p.c1.country : "")}</small></td></tr>
+<tr><td>Nearest city of a million</td><td class="num">${fmt(p.d2)} km</td></tr><tr><td colspan="2"><small>${esc(p.c2 ? p.c2.name + ", " + p.c2.country : "")}</small></td></tr>
+<tr><td>Coast (approximate)</td><td class="num">${fmt(p.dc)} km</td></tr></table>
+<p class="sub">Straight-line, great-circle distances. Towns from GeoNames cities1000; cities from Natural Earth. The coast is thinned to a point every 10 km or so.</p>`;
+  } else if (S.sel && S.sel.t === "c") {
+    const c = CTY[S.sel.i];
+    h = `<button class="back">Back</button><h4>${c[2] === "territory" ? "Territory" : "Country"}</h4><div class="big">${esc(c[0])}</div><p class="sub">${esc(c[3])}${c[17] ? ` · ${fmt(c[17])} km² of land on the grid` : ""}</p>
+<h4>Most remote point from a town</h4><table><tr><td>Where</td><td class="num">${ll(c[4], c[5])}</td></tr><tr><td>Nearest town</td><td class="num">${fmt(c[6])} km</td></tr><tr><td colspan="2"><small>${esc(c[7])}${c[8] !== c[0] ? ", " + esc(c[8]) : ""}</small></td></tr>
+<tr><td>Coast</td><td class="num">${fmt(c[11])} km</td></tr><tr><td>City of 100,000+</td><td class="num">${fmt(c[12])} km <small>${esc(c[13])}</small></td></tr><tr><td>City of a million</td><td class="num">${fmt(c[14])} km <small>${esc(c[15])}</small></td></tr></table>`;
+    if (c[22] !== c[6]) h += `<h4>On the main land mass</h4><p class="sub" style="color:var(--fg)">${ll(c[20], c[21])}: <b>${fmt(c[22])} km</b> from ${esc(c[23])}${c[24] !== c[0] ? ", " + esc(c[24]) : ""} <span class="go" data-ml="1">show</span></p>`;
+    if (c[16] != null) h += `<h4>How much is far from a town</h4><table><tr><td>Over 25 km</td><td class="num">${(+c[19]).toFixed(1)}%</td></tr><tr><td>Over 100 km</td><td class="num">${(+c[16]).toFixed(1)}%</td></tr><tr><td>Average distance</td><td class="num">${fmt(c[18])} km</td></tr></table>`;
+  } else if (S.sel && S.sel.t === "p") {
+    const c = CN[S.sel.c];
+    h = `<button class="back">Back</button><h4>${esc(c.c)}</h4><div class="big">${esc(c.m)}</div><p class="sub">The most remote point for each measure</p><table>` +
+      MEAS.map(([kk, short, , col]) => `<tr><td><i style="background:${MCOL()[kk]}"></i>From ${esc(short)}</td><td class="num">${fmt(c[kk].d)} km</td></tr><tr><td colspan="2"><small>${ll(c[kk].lat, c[kk].lon)}${kk !== "coast" ? " · " + esc(kk === "town" ? c[kk].town_name : c[kk][kk + "_name"]) : ""}</small></td></tr>`).join("") + `</table>` +
+      (c.c !== "Antarctica" ? `<p class="sub">With its islands, ${esc(c.c)}'s most remote land is ${fmt(c.any.d)} km from a town, in ${esc(c.any.country)}.</p>` : "");
+  } else {
+    h = `<h4>Farthest from ${esc(mm[1])}</h4><div class="big">${fmt(g.world.d)} km</div><p class="sub">${ll(g.world.lat, g.world.lon)}, ${esc(g.world.country)}: the most remote land outside Antarctica for this measure. In Antarctica: ${fmt(g.ant.d)} km.</p>
+<table><tr><td>Land over 100 km away</td><td class="num">${(+sh["100"]).toFixed(1)}%</td></tr><tr><td>Land over 500 km away</td><td class="num">${(+sh["500"]).toFixed(1)}%</td></tr><tr><td>Half of all land within</td><td class="num">${fmt(sh.median)} km</td></tr></table>
+<h4>Each mainland's most remote point</h4><table>` + CONTS.map(cn => `<tr><td><span class="go" data-c="${esc(cn)}">${esc(CN[cn].m.replace("mainland ", ""))}</span></td><td class="num">${fmt(CN[cn][k].d)} km</td></tr>`).join("") + `</table>
+<p class="sub">Click anywhere on land to measure it, or choose a country above. The shares leave out Antarctica.</p>`;
+  }
+  box.innerHTML = h;
+  const b = box.querySelector(".back"); if (b) b.onclick = () => { S.sel = null; S.pick = null; clearSel(); side(); };
+  box.querySelectorAll("[data-c]").forEach(e => e.onclick = () => pickPole(e.dataset.c));
+  const ml = box.querySelector("[data-ml]"); if (ml) ml.onclick = () => { const c = CTY[S.sel.i]; pickPoint(c[20], c[21], c[0] + ", main land mass"); };
+}
+
+function startMap() {
+  map = new maplibregl.Map({ container: "map", style: baseStyle(), ...HOME(), minZoom: 0, maxZoom: 12, renderWorldCopies: false, attributionControl: { compact: true }, fadeDuration: 0 });
+  window.map = map;
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+  map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-right");
+  map.on("error", e => { if (e && e.error && /Failed to fetch|NetworkError|AJAXError|404|Could not load|ERR_/.test(String(e.error.message || e.error))) return; console.warn(e && e.error); });
+  layerPanel();
+  map.on("load", () => {
+    fetch("data/world.json").then(r => r.json()).then(w => map.getSource("world").setData(w)).catch(() => {});
+    ready = true; addLabels(); drawCpts(); drawCities(); drawPoles(); applyLayers();
+    const l = document.getElementById("loading"); if (l) l.remove();
+    if (LY.towns) loadPts();
+  });
+  map.on("click", "cpts", e => { const f = e.features && e.features[0]; if (f) { e.preventDefault(); pickCountry(f.properties.i, false); } });
+  map.on("mouseenter", "cpts", () => map.getCanvas().style.cursor = "pointer"); map.on("mouseleave", "cpts", () => map.getCanvas().style.cursor = "");
+  map.on("click", e => { if (e.defaultPrevented) return; S.sel = null; measure(e.lngLat.lat, ((e.lngLat.lng + 540) % 360) - 180, null, false); });
+}
+
+/* ---------- charts ---------- */
+function shareChart() {
+  const D = R.cum.d, C = MCOL();
+  resp(document.getElementById("shareChart"), (w, sm) => {
+    const h = sm ? 280 : 340, m = { l: 42, r: 24, t: 12, b: 30 }, svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Cumulative share of land within a distance of a town, a city of 100,000, a city of a million and the sea" }, document.getElementById("shareChart"));
+    const L0 = Math.log10(2), L1 = Math.log10(4000), X = d => m.l + (w - m.l - m.r) * (Math.log10(Math.max(2, d)) - L0) / (L1 - L0), Y = v => h - m.b - (h - m.t - m.b) * v / 100;
+    for (let v = 0; v <= 100; v += 20) { el("line", { x1: m.l, x2: w - m.r, y1: Y(v), y2: Y(v), stroke: css("--rule") }, svg); lbl(svg, m.l - 6, Y(v) + 4, v + "%", "lab s m", "end"); }
+    (sm ? [2, 10, 100, 1000] : [2, 5, 10, 25, 50, 100, 250, 500, 1000, 4000]).forEach(d => { el("line", { x1: X(d), x2: X(d), y1: m.t, y2: h - m.b, stroke: css("--rule") }, svg); lbl(svg, X(d), h - 10, d >= 1000 ? fmt(d) : d, "lab s m", "middle"); });
+    lbl(svg, w - m.r, h - 10 - 14, "km, log scale", "lab s m", "end");
+    MK.forEach(k => { const pts = D.map((d, i) => [d, R.cum[k][i]]).filter(([d]) => d >= 2 && d <= 4000);
+      el("polyline", { points: pts.map(([d, v]) => `${X(d)},${Y(v)}`).join(" "), fill: "none", stroke: C[k], "stroke-width": 2.6 }, svg);
+      el("circle", { cx: X(R.share[k].median), cy: Y(50), r: 4, fill: C[k] }, svg); });
+    const g = el("line", { x1: 0, x2: 0, y1: m.t, y2: h - m.b, stroke: css("--fg"), opacity: 0 }, svg);
+    const hit = el("rect", { x: m.l, y: m.t, width: w - m.l - m.r, height: h - m.t - m.b, fill: "transparent" }, svg);
+    const mv = ev => { const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * w / r.width, d = 10 ** (L0 + (x - m.l) / (w - m.l - m.r) * (L1 - L0)); let i = 0; while (i < D.length - 1 && D[i + 1] <= d) i++;
+      g.setAttribute("x1", X(D[i])); g.setAttribute("x2", X(D[i])); g.setAttribute("opacity", .4);
+      showTip(`<b>Within ${fmt(D[i])} km of</b><br>` + MEAS.map(([k, s]) => `<span style="color:${C[k]}">■</span> ${esc(s)}: ${R.cum[k][i].toFixed(1)}% of land`).join("<br>"), ev.clientX, ev.clientY); };
+    hit.addEventListener("mousemove", mv); hit.addEventListener("click", ev => { ev.stopPropagation(); mv(ev); }); hit.addEventListener("mouseleave", () => { hideTip(); g.setAttribute("opacity", 0); });
+  });
+  document.getElementById("shareLegend").innerHTML = MEAS.map(([k, s]) => `<span><i class="sq" style="background:${MCOL()[k]}"></i>${esc(s)} (median ${fmt(R.share[k].median)} km)</span>`).join("");
+}
+function bandChart() {
+  const B = R.bands;
+  resp(document.getElementById("bandChart"), (w, sm) => {
+    const h = sm ? 230 : 270, m = { l: 36, r: 8, t: 10, b: 28 }, svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Share of land far from a town by band of latitude" }, document.getElementById("bandChart"));
+    const lo = -60, hi = 85, X = b => m.l + (w - m.l - m.r) * (b - lo) / (hi - lo), Y = v => h - m.b - (h - m.t - m.b) * v / 100, bw = X(5) - X(0);
+    for (let v = 0; v <= 100; v += 25) { el("line", { x1: m.l, x2: w - m.r, y1: Y(v), y2: Y(v), stroke: css("--rule") }, svg); lbl(svg, m.l - 5, Y(v) + 4, v + "%", "lab s m", "end"); }
+    B.forEach(b => { el("rect", { x: X(b.b) + 1, y: Y(b.far100), width: bw - 2, height: Y(0) - Y(b.far100), fill: css("--hot") }, svg); el("rect", { x: X(b.b) + 1, y: Y(b.far500), width: bw - 2, height: Y(0) - Y(b.far500), fill: css("--ink") }, svg);
+      const r = el("rect", { x: X(b.b), y: m.t, width: bw, height: h - m.t - m.b, fill: "transparent" }, svg);
+      r.addEventListener("mousemove", ev => showTip(`<b>${Math.abs(b.b)}° to ${Math.abs(b.b + 5)}°${b.b < 0 ? "S" : "N"}</b><br>${fmt(b.km2)} km² of land<br>over 100 km from a town: ${b.far100.toFixed(1)}%<br>over 500 km: ${b.far500.toFixed(1)}%`, ev.clientX, ev.clientY)); r.addEventListener("mouseleave", hideTip); });
+    for (let b = -60; b <= 80; b += sm ? 40 : 20) lbl(svg, X(b), h - 9, b === 0 ? "0°" : `${Math.abs(b)}°${b < 0 ? "S" : "N"}`, "lab s m", "middle");
+  });
+  document.getElementById("bandLegend").innerHTML = `<span><i class="sq" style="background:var(--hot)"></i>over 100 km from a town</span><span><i class="sq" style="background:var(--ink)"></i>over 500 km</span>`;
+}
+function contChart() {
+  const order = CONTS.filter(c => c !== "Antarctica"), C = MCOL();
+  resp(document.getElementById("contChart"), (w, sm) => {
+    const cols = w < 900 ? 2 : 4, rh = 22, lw = sm ? 92 : 104, pw = (w - (sm ? 0 : 0)) / cols, ph = order.length * rh + 30, rows = Math.ceil(4 / cols), h = rows * ph + 6;
+    const svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Most remote point of each continent's mainland for four distance measures" }, document.getElementById("contChart"));
+    MEAS.forEach(([k, short], j) => { const x0 = (j % cols) * pw, y0 = Math.floor(j / cols) * ph, mx = Math.max(...order.map(c => CN[c][k].d));
+      lbl(svg, x0 + ((j % cols) === 0 ? lw : 4), y0 + 14, "from " + short, "lab b").setAttribute("style", `fill:${C[k]}`);
+      order.forEach((cn, i) => { const y = y0 + 22 + i * rh, bx = x0 + ((j % cols) === 0 ? lw : 4), bw = (pw - ((j % cols) === 0 ? lw : 4) - 48) * CN[cn][k].d / mx;
+        if ((j % cols) === 0) lbl(svg, bx - 6, y + 14, CN[cn].m.replace("mainland ", ""), "lab s", "end");
+        const r = el("rect", { x: bx, y: y + 4, width: bw, height: rh - 8, fill: C[k], rx: 2 }, svg); r.style.cursor = "pointer"; lbl(svg, bx + bw + 4, y + 14, fmt(CN[cn][k].d), "lab s");
+        r.addEventListener("click", () => { setMeasure(k); document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => pickPole(cn), 400); });
+        r.addEventListener("mousemove", ev => showTip(`<b>${esc(CN[cn].m)}</b><br>${fmt(CN[cn][k].d)} km from ${esc(short)}<br>${ll(CN[cn][k].lat, CN[cn][k].lon)}`, ev.clientX, ev.clientY)); r.addEventListener("mouseleave", hideTip); }); });
+  });
+}
+function ctyChart() {
+  const T = R.countries_main_top.slice(0, 20);
+  resp(document.getElementById("ctyChart"), (w, sm) => {
+    const rh = 24, lw = sm ? 104 : 150, h = T.length * rh + 8, svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Countries ranked by the distance from the most remote point of their main land mass to a town" }, document.getElementById("ctyChart"));
+    const mx = T[0].d, room = sm ? 70 : 230;
+    T.forEach((r, i) => { const y = 4 + i * rh, bw = (w - lw - room) * r.d / mx, abroad = r.town_country !== r.name;
+      lbl(svg, lw - 8, y + 15, r.name, "lab", "end");
+      const b = el("rect", { x: lw, y: y + 4, width: bw, height: rh - 8, fill: abroad ? css("--vio") : css("--hot"), rx: 2 }, svg); b.style.cursor = "pointer";
+      lbl(svg, lw + bw + 5, y + 15, sm ? fmt(r.d) : `${fmt(r.d)} km  ${r.town}${abroad ? ", " + r.town_country : ""}`, "lab s");
+      const i0 = CTY.findIndex(c => c[0] === r.name);
+      b.addEventListener("click", () => { document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => pickPoint(r.lat, r.lon, r.name + ", main land mass"), 400); });
+      b.addEventListener("mousemove", ev => showTip(`<b>${esc(r.name)}</b><br>${fmt(r.d)} km from ${esc(r.town)}${abroad ? ", " + esc(r.town_country) : ""}<br>${ll(r.lat, r.lon)}${r.any_d > r.d ? `<br>counting islands: ${fmt(r.any_d)} km` : ""}`, ev.clientX, ev.clientY)); b.addEventListener("mouseleave", hideTip); });
+  });
+  document.getElementById("ctyLegend").innerHTML = `<span><i class="sq" style="background:var(--hot)"></i>nearest town in the same country</span><span><i class="sq" style="background:var(--vio)"></i>nearest town across a border</span>`;
+}
+function ctyTable() {
+  const t = document.getElementById("ctyTable"), q = document.getElementById("ctyQ"); let key = 6, dir = -1;
+  const draw = () => { const f = (q.value || "").toLowerCase(); const rows = CTY.map((c, i) => [c, i]).filter(([c]) => c[0].toLowerCase().includes(f)).sort((a, b) => key === 0 ? dir * a[0][0].localeCompare(b[0][0]) : dir * ((a[0][key] ?? -1) - (b[0][key] ?? -1)));
+    t.innerHTML = `<thead><tr><th data-s="0">Country or territory</th><th class="r" data-s="6">km to town</th><th>Nearest town</th><th class="r" data-s="16">Over 100 km</th></tr></thead><tbody>` +
+      rows.map(([c, i]) => `<tr data-i="${i}"><td>${esc(c[0])}${c[2] === "territory" ? " <small style='color:var(--muted)'>territory</small>" : ""}</td><td class="r">${fmt(c[6])}</td><td>${esc(c[7])}${c[8] !== c[0] ? ` <small style="color:var(--muted)">${esc(c[8])}</small>` : ""}</td><td class="r">${c[16] == null ? "" : (+c[16]).toFixed(1) + "%"}</td></tr>`).join("") + `</tbody>`;
+    t.querySelectorAll("th[data-s]").forEach(th => th.onclick = () => { const k = +th.dataset.s; if (k === key) dir = -dir; else { key = k; dir = k === 0 ? 1 : -1; } draw(); });
+    t.querySelectorAll("tr[data-i]").forEach(r => r.onclick = () => { document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => pickCountry(+r.dataset.i), 400); }); };
+  q.addEventListener("input", draw); draw();
+}
+function rowsTable(id, head, rows, onpick) {
+  const t = document.getElementById(id);
+  t.innerHTML = `<thead><tr>${head.map(([h, r]) => `<th${r ? ' class="r"' : ""}>${h}</th>`).join("")}</tr></thead><tbody>` + rows.map((r, i) => `<tr data-i="${i}">${r.map((v, j) => `<td${head[j][1] ? ' class="r"' : ""}>${v}</td>`).join("")}</tr>`).join("") + `</tbody>`;
+  t.querySelectorAll("tr[data-i]").forEach(r => r.onclick = () => { document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => onpick(+r.dataset.i), 400); });
+}
+function tables() {
+  const I = SITE.islands; rowsTable("islTable", [["Island"], ["Area km²", 1], ["km to town", 1], ["Nearest town"], ["Over 100 km", 1]], I.map(p => [esc(p.n), fmt(p.km2), fmt(p.d), esc(p.town_name), (R.isl[p.n.split(",")[0]].far100).toFixed(1) + "%"]), i => pickPoint(I[i].lat, I[i].lon, I[i].n));
+  const Cd = SITE.cands; rowsTable("candTable", [["Region"], ["km to town", 1], ["Nearest town"], ["Where"], ["Over 100 km", 1]], Cd.map(p => [esc(p.n), fmt(p.d), `${esc(p.town_name)} <small style="color:var(--muted)">${esc(p.town_country)}</small>`, ll(p.lat, p.lon), R.candidates.find(c => c.name === p.n).far100.toFixed(1) + "%"]), i => pickPoint(Cd[i].lat, Cd[i].lon, Cd[i].n));
+  const U = SITE.uk, N = SITE.uknat, rows = U.map((p, i) => [String(i + 1), fmt(p.d), esc(p.unit), esc(p.town_name), ll(p.lat, p.lon)]);
+  const nat = ["England", "Wales", "Northern Ireland"].map(n => [n, N[n]]);
+  rowsTable("ukTable", [["#"], ["km to town", 1], ["Council area"], ["Nearest town"], ["Where"]], rows.concat(nat.map(([n, p]) => [`<b>${n}</b>`, fmt(p.d), esc(p.unit), esc(p.town_name), ll(p.lat, p.lon)])),
+    i => { const p = i < U.length ? U[i] : nat[i - U.length][1]; pickPoint(p.lat, p.lon, i < U.length ? `Britain's no. ${i + 1} remote spot` : `${nat[i - U.length][0]}'s most remote point`); });
+}
+function charts() { shareChart(); bandChart(); contChart(); ctyChart(); ctyTable(); tables(); }
+
+/* ---------- start ---------- */
+document.getElementById("theme").onclick = () => { const r = document.documentElement; r.dataset.theme = isDark() ? "light" : "dark"; applyLayers(); legend(); redraws.forEach(f => f()); };
+legend(); side(); charts();
+if (typeof maplibregl === "undefined") { document.getElementById("loading").textContent = "The map library did not load. The charts and tables below still work."; }
+else startMap();
+</script>
+/*FULLSCREEN*/
+</body>
+</html>

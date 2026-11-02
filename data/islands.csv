@@ -1,0 +1,16 @@
+island,km2,lat,lon,km_to_town,nearest_town,pct_over_100km
+Ellesmere Island,201308,83.11,-69.88,1170.0,Pond Inlet,100.0
+Greenland,2146304,83.06,-46.17,1161.6,Longyearbyen,93.05
+Victoria Island,219832,73.16,-115.89,593.3,Cambridge Bay,92.07
+Baffin Island,519526,71.94,-90.02,415.1,Igloolik,82.92
+New Guinea,786917,-7.5,142.74,181.2,Mendi,8.22
+Borneo,735775,-0.66,113.14,160.6,Nangah Pinoh,6.01
+Iceland,103176,64.47,-17.98,135.0,Akureyri,9.67
+Madagascar,597369,-20.63,45.55,121.9,Ikalamavony,0.54
+"South Island, New Zealand",152739,-45.95,166.49,112.2,Te Anau,0.23
+Tasmania,64568,-43.03,145.64,105.4,Geeveston,0.0
+Sulawesi,173523,-1.59,122.15,100.3,Luwuk,0.0
+Sumatra,431193,-3.01,105.7,94.6,Sungaigerong,0.0
+Great Britain,219767,58.58,-4.87,77.6,Ullapool,0.0
+Ireland,85734,51.61,-10.03,39.9,Cahersiveen,0.0
+Honshu,230296,36.04,136.88,34.2,Katsuyama,0.0

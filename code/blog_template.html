@@ -1,0 +1,120 @@
+<!-- wp:paragraph -->
+<p><em>Where on Earth is farthest from everyone? I measured the distance from every patch of land to the nearest town, the nearest big city and the nearest sea, and went looking for the middle of nowhere on every continent, in every country and in Britain.</em></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons -->
+<div class="wp-block-buttons"><!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://maps.tristanhotham.com/remote-places/">Explore the interactive map</a></div>
+<!-- /wp:button -->
+<!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://doi.org/10.5281/zenodo.23873015">Read the paper</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
+
+<!-- wp:paragraph -->
+<p>Geographers have long hunted for the poles of inaccessibility, the points on each continent farthest from the sea. The most famous lies in the Dzungarian basin of north-west China, about as far from any ocean as you can get. But it is not remote at all: by my count it is {{eurasia.ours_town|int}} km from a town. Being far from the sea is not the same as being far from people.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>So I asked a different question: which places are farthest from any town? I covered all of the world's land with a grid of cells a tenth of a degree across, {{source.land_cells|int}} of them, and for each one measured the straight-line distance over the globe to the nearest of {{source.towns|int}} places of 1,000 or more people in the GeoNames gazetteer. I did the same for cities of 100,000 and of a million, and for the coast.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_map_town.png|World map of the land coloured by distance to the nearest town of 1,000 or more people, from pale cream near towns through orange to deep purple far away. Europe, India, eastern China and the eastern United States are almost all pale. Dark patches cover the Sahara, Arabia, Tibet, central Australia, northern Canada, Siberia and, darkest of all, Greenland and Antarctica. Circles mark the most remote point of each continent's mainland: Asia {{continents.Asia.town.d|int}} km, Australia {{continents.Australia and Oceania.town.d|int}} km, Africa {{continents.Africa.town.d|int}} km, North America {{continents.North America.town.d|int}} km, South America {{continents.South America.town.d|int}} km and Europe {{continents.Europe.town.d|int}} km, with Marion Island in the Southern Ocean at {{scraps.0.d|int}} km and Antarctica at {{antarctica.max.d|int}} km|Distance from every point on land to the nearest place of 1,000 or more people. Circles: the most remote point of each continent's mainland.}}
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">A quarter of the land is far from a town</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Most land is not far from someone. Half of the land outside Antarctica lies within {{share.town.median|int}} km of a town. But {{share.town.100|pc1}} of it, {{share.town.100_m|f1}} million square kilometres, is more than 100 km from the nearest one, and {{share.town.500|pc1}} more than 500 km. Big cities are far sparser: half of all land is more than {{share.c1m.median|int}} km from a city of a million.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_share.png|Line chart of the share of the world's land within a given distance, on a log scale from 2 to 4,000 km. The curve for towns rises first, passing half of all land at {{share.town.median|int}} km; cities of 100,000 follow at {{share.c100k.median|int}} km, the sea at {{share.coast.median|int}} km and cities of a million at {{share.c1m.median|int}} km|How much of the world's land, outside Antarctica, lies within a given distance of a town, a city and the sea.}}
+
+<!-- wp:paragraph -->
+<p>The emptiness is concentrated in the far north and in the deserts. Land north of 60°N is {{north.north60_land_pct|int}}% of the total, but it holds {{north.far100_share_north60|int}}% of the land more than 100 km from a town and {{north.far500_share_north60|int}}% of the land more than 500 km away.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">The middle of nowhere, continent by continent</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>On Asia's mainland the most remote spot is Cape Chelyuskin, the northernmost tip of Eurasia, {{continents.Asia.town.d|int}} km from {{continents.Asia.town.town_name|raw}}. Australia's is in the Great Victoria Desert, {{continents.Australia and Oceania.town.d|int}} km from {{continents.Australia and Oceania.town.town_name|raw}}. Africa's is in the Libyan Desert of north-western Sudan, {{continents.Africa.town.d|int}} km from a town. North America's is in the far north of Saskatchewan ({{continents.North America.town.d|int}} km), South America's in the rainforest of northern Brazil near Suriname ({{continents.South America.town.d|int}} km), and Europe's on the Kara Sea coast of north-eastern European Russia ({{continents.Europe.town.d|int}} km).</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_continents.png|Four sets of horizontal bars, one for each kind of distance, for the mainlands of Africa, Asia, Europe, North America, South America and Australia. From a town, Asia leads with {{continents.Asia.town.d|int}} km; from a city of 100,000, North America with {{continents.North America.c100k.d|int}} km; from a city of a million, Asia with {{continents.Asia.c1m.d|int}} km; from the sea, Asia with {{continents.Asia.coast.d|int}} km|The most remote point of each continent's mainland, by what it is far from.}}
+
+<!-- wp:paragraph -->
+<p>The far-from-the-sea poles land where published calculations put them: near Obo in the Central African Republic, in South Dakota, in Mato Grosso in Brazil, west of Alice Springs, and in Dzungaria, where my coastline puts the point {{eurasia.ours.d|int}} km from the sea and {{eurasia.sep_km|int}} km from the usual position. Not one of them is far from a town.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Count islands and the record goes to a rock in the Southern Ocean. Marion Island, one of South Africa's Prince Edward Islands, is {{scraps.0.d|int}} km from the nearest town, {{scraps.0.town_name|raw}} in the Eastern Cape. In the Arctic, Cape Columbia at the top of Canada's Ellesmere Island is {{isl.Ellesmere Island.d|int}} km from a town. And Antarctica, which has research stations but no towns, is in a class of its own: every point of it is at least {{antarctica.min_town|int}} km from one, and the most remote {{antarctica.max.d|int}} km.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:pullquote -->
+<figure class="wp-block-pullquote"><blockquote><p>The most landlocked place on Earth is {{eurasia.ours_town|int}} km from a town. Being far from the sea is not the same as being far from people.</p></blockquote></figure>
+<!-- /wp:pullquote -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Every country's empty quarter</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>For every country I found the point inside its borders farthest from any town, at home or abroad. On each country's main land mass Greenland comes first, {{countries_main_top.0.d|int}} km from {{countries_main_top.0.town|raw}}, followed by Russia, Australia, Sudan and Canada. Often the nearest town is in another country: the deep Sahara of Libya is closest to {{countries.Libya.town_name|raw}} in Chad, and Saudi Arabia's Empty Quarter to {{countries.Saudi Arabia.town_name|raw}} in Yemen. That is true for {{n_abroad|int}} countries.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_countries.png|Horizontal bar chart of twenty countries ranked by the distance from the most remote point of their main land mass to the nearest town. Greenland leads with {{countries_main_top.0.d|int}} km, then Russia {{countries_main_top.1.d|int}}, Australia {{countries_main_top.2.d|int}}, Sudan {{countries_main_top.3.d|int}} and Canada {{countries_main_top.4.d|int}}. Purple bars, such as Libya, Egypt, Mauritania, Algeria and Saudi Arabia, mark countries whose nearest town lies across a border|The farthest point from a town on each country's main land mass, for countries over 100,000 km².}}
+
+<!-- wp:paragraph -->
+<p>Cities of a million are another story. From the far north of Chukotka the nearest is {{continents.Asia.c1m.d|int}} km away, and from the Marquesas Islands in French Polynesia, the most remote land of all on this measure, {{global.c1m.world.d|int}} km.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_map_c1m.png|World map of the land coloured by distance to the nearest city of a million people. Pale rings surround the cities of Europe, India, China and the eastern United States; almost everything else is deep red or purple. Circles mark the farthest point of each continent's mainland: Asia {{continents.Asia.c1m.d|int}} km in Chukotka, North America {{continents.North America.c1m.d|int}} km in north-western Alaska, South America {{continents.South America.c1m.d|int}} km at its southern tip, Australia {{continents.Australia and Oceania.c1m.d|int}} km, Africa {{continents.Africa.c1m.d|int}} km and Europe {{continents.Europe.c1m.d|int}} km|Distance from every point on land to the nearest city of a million or more.}}
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">And in Britain?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>In a crowded island remoteness shrinks to tens of kilometres: half of Great Britain is within {{gb.median|f1}} km of a town. The most remote spot on the mainland is near Cape Wrath, the north-west tip of Scotland, {{uk.Scotland.d|int}} km from {{uk.Scotland.town_name|raw}}, and nearly all of the ten most remote spots are in the Highland council area. England's is in Kielder Forest in Northumberland, {{uk.England.d|int}} km from a town, and the nearest town is {{uk.England.town_name|raw}}, over the border in Scotland. Wales's is the very tip of the Llŷn Peninsula, {{uk.Wales.d|int}} km from {{uk.Wales.town_name|raw}}, and Northern Ireland's is in the Sperrin Mountains, {{uk.Northern Ireland.d|int}} km from {{uk.Northern Ireland.town_name|raw}}.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_uk.png|Map of the United Kingdom coloured by distance to the nearest town of 1,000 people, mostly pale in England and Wales and darkening to purple across the north-west Highlands of Scotland. Labels mark the most remote point of each nation: Scotland near Cape Wrath, {{uk.Scotland.d|int}} km from {{uk.Scotland.town_name|raw}}; England in Kielder Forest, {{uk.England.d|int}} km from {{uk.England.town_name|raw}}; Wales at the tip of the Llŷn, {{uk.Wales.d|int}} km; and Northern Ireland in the Sperrins, {{uk.Northern Ireland.d|int}} km. A list beside the map gives the ten most remote spots on Great Britain, most of them in Highland|The most remote spots in the United Kingdom, measured from places of 1,000 or more people.}}
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">What this is, and is not</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>"Far from a town" does not mean empty. The gazetteer counts places of 1,000 or more people, so it misses villages, hamlets, Inuit settlements, oases and research stations, and it keeps a handful of smaller administrative seats, such as the French base on Kerguelen. Distances are straight lines over the globe, not journeys: 50 km of Highland bog can take longer to cross than 500 km of desert road. For travel time, the Malaria Atlas Project's global map of accessibility to cities for 2015 (Weiss and others, Nature, 2018) is the place to look. The grid is a tenth of a degree, refined to about a kilometre at each maximum. The paper sets out every step and caveat.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons -->
+<div class="wp-block-buttons"><!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://maps.tristanhotham.com/remote-places/">Explore the interactive map</a></div>
+<!-- /wp:button -->
+<!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://doi.org/10.5281/zenodo.23873015">Read the paper</a></div>
+<!-- /wp:button -->
+<!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://github.com/Tristan-Hotham/remote-places">Data and code</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">Notes and sources</h3>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li><a href="https://www.geonames.org/">GeoNames</a>, cities1000 gazetteer (all populated places of 1,000 or more people), CC BY 4.0, as packaged by <a href="https://github.com/lutangar/cities.json">lutangar/cities.json</a>.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><a href="https://www.naturalearthdata.com/">Natural Earth</a> populated places, land and country outlines (public domain).</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
